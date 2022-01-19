@@ -40,6 +40,9 @@ It supports the following PostgreSQL types:
 - `integer` (`numpy.int32`)
 - `bigint` (`numpy.int64`)
 
+Additionally, it supports arrays varying from 1D to N-D so a 2D or 3D array
+are supported.
+
 .. code-block:: python
 
     cursor: psycopg.Cursor

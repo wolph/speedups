@@ -1,10 +1,9 @@
 import numpy as np
 import psycopg
+import speedups.psycopg_array
 from psycopg import _struct as psycopg_struct  # noqa
 from psycopg.abc import Loader
 from psycopg.types import array as psycopg_array
-
-import speedups.psycopg_array
 
 
 class NumpyLoader(psycopg_array.ArrayBinaryLoader):
