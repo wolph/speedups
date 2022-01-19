@@ -38,7 +38,7 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_ARCHS_MACOS: native
           CIBW_ARCHS_WINDOWS: AMD64
-          CIBW_SKIP: 'pp* cp36-*'
+          CIBW_SKIP: 'pp* cp36-* *-musllinux_*'
 
       - uses: actions/upload-artifact@v2
         with:
