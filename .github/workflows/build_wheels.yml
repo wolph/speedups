@@ -8,7 +8,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-10.15]
+        os: [ubuntu-20.04, windows-2019]
+        # The macos build does not appear to work
+        # os: [ubuntu-20.04, windows-2019, macos-10.15]
 
     steps:
       - uses: actions/checkout@v2
