@@ -1,0 +1,16 @@
+[build-system]
+requires = [
+    'setuptools >= 60.5.0',
+    'cython >= 0.29.26',
+    'numpy >= 1.21.5',
+    'wheel >= 0.37.1',
+]
+build-backend = 'setuptools.build_meta'
+
+[tool.cibuildwheel]
+# Disable building PyPy wheels on all platforms
+skip = 'pp* cp36-* *-win32 *i686'
+
+# On an Linux Intel runner with qemu installed, build Intel and ARM wheels
+[tool.cibuildwheel.linux]
+archs = ['x86_64', 'aarch64']
