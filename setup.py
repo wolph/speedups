@@ -1,8 +1,8 @@
 import os
-import numpy
 import pathlib
-import setuptools
 
+import numpy
+import setuptools
 # Get current directory
 from Cython.Build import cythonize
 
@@ -37,5 +37,5 @@ if __name__ == '__main__':
     setuptools.setup(
         ext_modules=cythonize([
             create_extension('speedups.psycopg_array'),
-        ]),
+        ], language_level=3),
     )

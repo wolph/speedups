@@ -1,1 +1,4 @@
 *.c
+*.so
+/build
+/dist
