@@ -3,14 +3,20 @@ import pathlib
 
 import numpy
 import setuptools
-# Get current directory
 from Cython.Build import cythonize
 
+# Get current directory
 PATH = pathlib.Path(__file__).parent
 SRC_PATH = PATH / 'speedups'
 
 # Tell the compiler to optimize
 os.environ.setdefault('CFLAGS', '-O3')
+
+# To prevent importing about and thereby breaking the coverage info we use this
+# exec hack
+about = {}
+with open('stl/__about__.py') as fh:
+    exec(fh.read(), about)
 
 
 def create_extension(name, *sources):
@@ -35,6 +41,11 @@ def create_extension(name, *sources):
 
 if __name__ == '__main__':
     setuptools.setup(
+        name=about['__package_name__'],
+        author=about['__author__'],
+        author_email=about['__author_email__'],
+        description=about['__description__'],
+        url=about['__url__'],
         ext_modules=cythonize([
             create_extension('speedups.psycopg_array'),
         ], language_level=3),
