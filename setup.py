@@ -15,7 +15,7 @@ os.environ.setdefault('CFLAGS', '-O3')
 # To prevent importing about and thereby breaking the coverage info we use this
 # exec hack
 about = {}
-with open('stl/__about__.py') as fh:
+with (SRC_PATH / '__about__.py').open() as fh:
     exec(fh.read(), about)
 
 
