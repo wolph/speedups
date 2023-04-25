@@ -6,9 +6,7 @@ jobs:
   build_quick:
     name: Fast wheel build
     runs-on: ubuntu-20.04
-    # if: github.event_name == 'push' && startsWith(github.event.ref, 'develop')
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'develop')
     steps:
       - uses: actions/checkout@v2
 
@@ -25,8 +23,7 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     timeout-minutes: 15
     runs-on: ${{ matrix.os }}
-    # if: github.event_name == 'push' && startsWith(github.event.ref,
-    # 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     strategy:
       matrix:
         os: [ ubuntu-20.04, windows-2019, macos-10.15 ]
@@ -65,7 +62,7 @@ jobs:
   upload_all:
     needs: [ build_wheels, make_sdist ]
     runs-on: ubuntu-latest
-    #    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v2
         with:
