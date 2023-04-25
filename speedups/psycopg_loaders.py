@@ -1,39 +1,43 @@
+#pyright: reportPrivateUsage=false
+import typing
+
 import numpy as np
 import psycopg
-import speedups.psycopg_array
-from psycopg import _struct as psycopg_struct  # noqa
 from psycopg.abc import Loader
 from psycopg.types import array as psycopg_array
 
+import speedups.psycopg_array
+
+T = typing.TypeVar('T')
+converterT = typing.Callable[[memoryview, np.ndarray[typing.Any, typing.Any]], None]
 
 class NumpyLoader(psycopg_array.ArrayBinaryLoader):
 
     @classmethod
-    def install(cls, cursor: psycopg.AsyncCursor | psycopg.Cursor):
+    def install(cls, cursor: psycopg.AsyncCursor[T] | psycopg.Cursor[T]):
         types = 'float4', 'float8', 'smallint', 'integer', 'bigint',
 
         for type_ in types:
-            cursor.adapters.register_loader(
-                cursor.adapters.types.get(f'{type_}[]').array_oid,
-                cls,
-            )
+            adapter_type = cursor.adapters.types.get(f'{type_}[]')
+            assert adapter_type is not None, f'Adapter type not found: {type_}[]'
+            cursor.adapters.register_loader(adapter_type.array_oid, cls)
 
-    def load(self, data: memoryview):
+    def load(self, data: memoryview) -> np.ndarray[typing.Any, typing.Any]:  # type: ignore[override]
         assert isinstance(data, memoryview)
 
         struct_head = psycopg_array._struct_head
         struct_dim = psycopg_array._struct_dim
 
-        rows, data_offset, oid = struct_head.unpack_from(data)
+        rows, _, oid = struct_head.unpack_from(data)
         if rows:
             # Move "pointer" beyond header
             data = data[struct_head.size:]
         else:
-            return []
+            return np.empty(0)
 
         # Read dimensions
         dimensions_size = struct_dim.size * rows
-        dimensions = []
+        dimensions: typing.List[int] = []
         for dimension, lbound in struct_dim.iter_unpack(data[:dimensions_size]):
             assert lbound == 1, 'Lower bound other than 1 is not supported'
             dimensions.append(dimension)
@@ -60,6 +64,7 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
         output = np.empty(dimensions, dtype=dtype)
 
         # Convert data to numpy array
+        converter: converterT
         if loader_name.startswith('Float'):
             converter = speedups.psycopg_array.float_array_to_numpy
         else:
