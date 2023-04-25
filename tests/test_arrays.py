@@ -60,7 +60,7 @@ def test_2d(postgresql: psycopg.Connection):
             'bigint[]',
         ])
 
-        totals = [0] * 5
+        totals = numpy.zeros(5, dtype=numpy.int8)
         for row in copy.rows():
             for i, column in enumerate(row):
                 totals[i] += column.sum()

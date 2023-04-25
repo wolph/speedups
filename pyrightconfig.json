@@ -1,0 +1,11 @@
+{
+  "include": ["speedups", "tests"],
+  "strict": ["speedups"],
+  "exclude": [
+    ".git",
+    "**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs"
+  ],
+}
