@@ -18,10 +18,5 @@ archs = ['x86_64', 'aarch64']
 [tool.pyright]
 include = ['speedups', 'tests']
 strict = ['speedups']
-exclude = [
-    '.git',
-    '**/node_modules',
-    '**/__pycache__',
-    'src/experimental',
-    'src/typestubs',
-]
+stubPath = '.'
+pythonPlatform = 'All'
