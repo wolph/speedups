@@ -1,5 +1,8 @@
 *.c
+*.pyc
 *.so
+/.venv
 /build
 /dist
+/wheelhouse
 .eggs
