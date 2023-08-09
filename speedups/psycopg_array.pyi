@@ -1,18 +1,18 @@
-import typing
+from typing import Any, Callable
 import numpy as np
+import numpy.typing as npt
 
-converterT = typing.Callable[[memoryview, np.ndarray[typing.Any, typing.Any]], None]
+converterT = Callable[[memoryview, npt.NDArray[Any]], None]
 
 def float_array_to_numpy(
         data: memoryview,
-        output_view: np.ndarray[np.float32 | np.float64, typing.Any],
+        output_view: npt.NDArray[np.floating[Any]],
 ) -> None:
     pass
 
 
 def int_array_to_numpy(
         data: memoryview,
-        output_view: np.ndarray[np.int16 | np.int32 | np.int64, typing.Any],
+        output_view: npt.NDArray[np.integer[Any]],
 ) -> None:
     pass
-
