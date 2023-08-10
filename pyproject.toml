@@ -14,3 +14,9 @@ skip = 'pp* cp36-* cp312-* *-win32 *i686'
 # On an Linux Intel runner with qemu installed, build Intel and ARM wheels
 [tool.cibuildwheel.linux]
 archs = ['x86_64', 'aarch64']
+
+[tool.pyright]
+include = ['speedups', 'tests']
+strict = ['speedups']
+stubPath = '.'
+pythonPlatform = 'All'
