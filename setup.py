@@ -23,7 +23,7 @@ def create_extension(name, *sources):
     if not sources:
         # if no sources are passed guess from the name
         path = pathlib.Path(*name.split('.'))
-        sources = [str(path) + '.pyx']
+        sources = [f'{str(path)}.pyx']
 
     return setuptools.Extension(
         name,

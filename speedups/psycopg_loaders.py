@@ -1,7 +1,8 @@
-#pyright: reportPrivateUsage=false
+# pyright: reportPrivateUsage=false
 import typing
 
 import numpy as np
+import numpy.typing as npt
 import psycopg
 from psycopg.abc import Loader
 from psycopg.types import array as psycopg_array
@@ -10,6 +11,7 @@ import speedups.psycopg_array
 
 T = typing.TypeVar('T')
 converterT = typing.Callable[[memoryview, np.ndarray[typing.Any, typing.Any]], None]
+
 
 class NumpyLoader(psycopg_array.ArrayBinaryLoader):
 
@@ -67,8 +69,15 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
         converter: converterT
         if loader_name.startswith('Float'):
             converter = speedups.psycopg_array.float_array_to_numpy
+            converter(
+                data.cast('c'),
+                typing.cast(npt.NDArray[np.floating[typing.Any]], output.reshape(-1)),
+            )
         else:
             converter = speedups.psycopg_array.int_array_to_numpy
+            converter(
+                data.cast('c'),
+                typing.cast(npt.NDArray[np.integer[typing.Any]], output.reshape(-1)),
+            )
 
-        converter(data.cast('c'), output.reshape(-1))
         return output
