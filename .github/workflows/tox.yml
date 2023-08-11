@@ -1,0 +1,48 @@
+name: tox
+on: push
+jobs:
+  # First, use tox-gh-matrix to construct a build matrix
+  # from your tox.ini:
+  get-envlist:
+    runs-on: ubuntu-latest
+    # Make the JSON envlist available to the test job:
+    outputs:
+      envlist: ${{ steps.generate-envlist.outputs.envlist }}
+    steps:
+      # Checkout project code to get tox.ini:
+      - uses: actions/checkout@v3
+      # Install tox and tox-gh-matrix:
+      - run: python -m pip install -U pip
+      - run: python -m pip install tox tox-gh-matrix
+      # Run `tox --gh-matrix` to generate the JSON list:
+      - id: generate-envlist
+        run: python -m tox --gh-matrix
+
+  # Now run your tests using that matrix:
+  test:
+    # Pull in the JSON generated in the previous job:
+    needs: get-envlist
+    strategy:
+      # Define a build matrix property `tox` that iterates
+      # the envlist:
+      matrix:
+        tox: ${{ fromJSON(needs.get-envlist.outputs.envlist) }}
+      # Run all matrix jobs, even if some fail:
+      fail-fast: false
+    # The workflow treats everything below as a template
+    # to run a separate job for each build matrix item.
+    name: Test ${{ matrix.tox.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Install the required Python version if necessary:
+      - name: Setup Python ${{ matrix.tox.python.version }}
+        if: matrix.tox.python.spec && ! matrix.tox.python.installed
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.tox.python.spec }}
+      # Install tox (you don't need tox-gh-matrix at this point):
+      - run: python -m pip install tox
+      # Run `tox -e {name}` to test the single tox environment
+      # for this matrix entry:
+      - run: python -m tox -e ${{ matrix.tox.name }}
