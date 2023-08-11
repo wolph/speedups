@@ -1,7 +1,8 @@
-#pyright: reportPrivateUsage=false
+# pyright: reportPrivateUsage=false
 import typing
 
 import numpy as np
+import numpy.typing as npt
 import psycopg
 from psycopg.abc import Loader
 from psycopg.types import array as psycopg_array
@@ -9,12 +10,14 @@ from psycopg.types import array as psycopg_array
 import speedups.psycopg_array
 
 T = typing.TypeVar('T')
-converterT = typing.Callable[[memoryview, np.ndarray[typing.Any, typing.Any]], None]
+converterT = typing.Callable[[memoryview, npt.NDArray[typing.Any]], None]
+
 
 class NumpyLoader(psycopg_array.ArrayBinaryLoader):
 
     @classmethod
-    def install(cls, cursor: psycopg.AsyncCursor[T] | psycopg.Cursor[T]):
+    def install(cls, cursor: typing.Union[
+        psycopg.AsyncCursor[T], psycopg.Cursor[T]]):
         types = 'float4', 'float8', 'smallint', 'integer', 'bigint',
 
         for type_ in types:
@@ -22,7 +25,10 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
             assert adapter_type is not None, f'Adapter type not found: {type_}[]'
             cursor.adapters.register_loader(adapter_type.array_oid, cls)
 
-    def load(self, data: memoryview) -> np.ndarray[typing.Any, typing.Any]:  # type: ignore[override]
+    def load(  # type: ignore[override]
+            self,
+            data: memoryview,
+    ) -> npt.NDArray[typing.Any]:
         assert isinstance(data, memoryview)
 
         struct_head = psycopg_array._struct_head
@@ -70,5 +76,7 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
         else:
             converter = speedups.psycopg_array.int_array_to_numpy
 
-        converter(data.cast('c'), output.reshape(-1))
+        # Once we stop supporting Python 3.8 we can use a cast instead
+        converter(data.cast('c'), output.reshape(-1))  # type: ignore[arg-type]
+
         return output
