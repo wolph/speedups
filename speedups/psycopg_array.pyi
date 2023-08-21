@@ -5,14 +5,13 @@ import numpy.typing as npt
 converterT = Callable[[memoryview, npt.NDArray[Any]], None]
 
 def float_array_to_numpy(
-        data: memoryview,
-        output_view: npt.NDArray[np.floating[Any]],
+    data: memoryview,
+    output_view: npt.NDArray[np.floating[Any]],
 ) -> None:
     pass
 
-
 def int_array_to_numpy(
-        data: memoryview,
-        output_view: npt.NDArray[np.integer[Any]],
+    data: memoryview,
+    output_view: npt.NDArray[np.integer[Any]],
 ) -> None:
     pass

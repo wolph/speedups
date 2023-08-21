@@ -14,20 +14,28 @@ converterT = typing.Callable[[memoryview, npt.NDArray[typing.Any]], None]
 
 
 class NumpyLoader(psycopg_array.ArrayBinaryLoader):
-
     @classmethod
-    def install(cls, cursor: typing.Union[
-        psycopg.AsyncCursor[T], psycopg.Cursor[T]]):
-        types = 'float4', 'float8', 'smallint', 'integer', 'bigint',
+    def install(
+        cls, cursor: typing.Union[psycopg.AsyncCursor[T], psycopg.Cursor[T]]
+    ):
+        types = (
+            'float4',
+            'float8',
+            'smallint',
+            'integer',
+            'bigint',
+        )
 
         for type_ in types:
             adapter_type = cursor.adapters.types.get(f'{type_}[]')
-            assert adapter_type is not None, f'Adapter type not found: {type_}[]'
+            assert (
+                adapter_type is not None
+            ), f'Adapter type not found: {type_}[]'
             cursor.adapters.register_loader(adapter_type.array_oid, cls)
 
     def load(  # type: ignore[override]
-            self,
-            data: memoryview,
+        self,
+        data: memoryview,
     ) -> npt.NDArray[typing.Any]:
         assert isinstance(data, memoryview)
 
@@ -37,14 +45,16 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
         rows, _, oid = struct_head.unpack_from(data)
         if rows:
             # Move "pointer" beyond header
-            data = data[struct_head.size:]
+            data = data[struct_head.size :]
         else:
             return np.empty(0)
 
         # Read dimensions
         dimensions_size = struct_dim.size * rows
         dimensions: typing.List[int] = []
-        for dimension, lbound in struct_dim.iter_unpack(data[:dimensions_size]):
+        for dimension, lbound in struct_dim.iter_unpack(
+            data[:dimensions_size]
+        ):
             assert lbound == 1, 'Lower bound other than 1 is not supported'
             dimensions.append(dimension)
 
