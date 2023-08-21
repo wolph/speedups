@@ -32,11 +32,10 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     timeout-minutes: 15
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push'
     # if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     strategy:
       matrix:
-        os: [ ubuntu-20.04, windows-2019, macos-10.15 ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - uses: actions/checkout@v3
@@ -80,7 +79,6 @@ jobs:
   upload_all:
     needs: [ build_wheels, make_sdist ]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     # if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v3
