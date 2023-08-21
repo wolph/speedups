@@ -3,10 +3,12 @@ import psycopg
 import pytest
 
 import speedups
+
 print('speedups', speedups)
-from speedups import psycopg_array
+from speedups import psycopg_array  # noqa: E402
+
 print('speedups', psycopg_array)
-from speedups import psycopg_loaders
+from speedups import psycopg_loaders  # noqa: E402
 
 
 def test_1d(postgresql: psycopg.Connection):
@@ -23,9 +25,11 @@ def test_1d(postgresql: psycopg.Connection):
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
         print('running query', query)
-        copy.set_types([
-            'integer[]',
-        ])
+        copy.set_types(
+            [
+                'integer[]',
+            ]
+        )
 
         total = 0
         for row in copy.rows():
@@ -52,13 +56,15 @@ def test_2d(postgresql: psycopg.Connection):
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
         print('running query', query)
-        copy.set_types([
-            'float4[]',
-            'float8[]',
-            'smallint[]',
-            'integer[]',
-            'bigint[]',
-        ])
+        copy.set_types(
+            [
+                'float4[]',
+                'float8[]',
+                'smallint[]',
+                'integer[]',
+                'bigint[]',
+            ]
+        )
 
         totals = numpy.zeros(5, dtype=numpy.int8)
         for row in copy.rows():
@@ -89,12 +95,14 @@ def test_cast(postgresql: psycopg.Connection):
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
         print('running query', query)
-        copy.set_types([
-            'float4[]',
-            'float8[]',
-            'float4[]',
-            'float8[]',
-        ])
+        copy.set_types(
+            [
+                'float4[]',
+                'float8[]',
+                'float4[]',
+                'float8[]',
+            ]
+        )
 
         for row in copy.rows():
             assert row[0].dtype == numpy.float32
@@ -128,18 +136,20 @@ def test_types(postgresql: psycopg.Connection):
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
         print('running query', query)
-        copy.set_types([
-            'float4[]',
-            'float8[]',
-            'int2[]',
-            'int4[]',
-            'int8[]',
-            'text[]',
-            'varchar[]',
-            'float4',
-            'int4',
-            'text',
-        ])
+        copy.set_types(
+            [
+                'float4[]',
+                'float8[]',
+                'int2[]',
+                'int4[]',
+                'int8[]',
+                'text[]',
+                'varchar[]',
+                'float4',
+                'int4',
+                'text',
+            ]
+        )
 
         for row in copy.rows():
             assert row[0].dtype == numpy.float32
@@ -160,4 +170,3 @@ def test_types(postgresql: psycopg.Connection):
             assert row[7] == pytest.approx(0.1)
             assert row[8] == 1
             assert row[9] == 'a'
-
