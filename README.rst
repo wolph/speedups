@@ -1,6 +1,12 @@
 Speedups
 ------------------------------------------------------------------------------
 
+.. image:: https://github.com/wolph/speedups/actions/workflows/build.yml/badge.svg
+   :target: https://github.com/wolph/speedups/actions/workflows/build.yml
+
+.. image:: https://github.com/wolph/speedups/actions/workflows/tox.yml/badge.svg
+   :target: https://github.com/wolph/speedups/actions/workflows/tox.yml
+
 This library contains a number of functions for speeding up critical parts
 of your Python code without having to bother with the hassle of building
 binary extensions. That way you can keep your main packages simple `PEP517`_
