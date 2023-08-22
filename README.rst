@@ -1,8 +1,8 @@
 Speedups
 ------------------------------------------------------------------------------
 
-.. image:: https://github.com/wolph/speedups/actions/workflows/build.yml/badge.svg
-   :target: https://github.com/wolph/speedups/actions/workflows/build.yml
+.. image:: https://github.com/wolph/speedups/actions/workflows/build_wheels.yml/badge.svg
+   :target: https://github.com/wolph/speedups/actions/workflows/build_wheels.yml
 
 .. image:: https://github.com/wolph/speedups/actions/workflows/tox.yml/badge.svg
    :target: https://github.com/wolph/speedups/actions/workflows/tox.yml
