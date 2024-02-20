@@ -1,20 +1,35 @@
+# Byte-compiled
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 
+# C extensions
 *.c
 *.so
 
-.venv/
-venv/
-
-.eggs/
+# Distribution
 build/
 dist/
-wheelhouse/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg
 
+# Unit test
+.tox/
+.nox/
+.cache
 .pyright/
 .pytest_cache/
 
+# Environments
+.env
+.venv/
+env/
+venv/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
 .idea/
-.vscode/
