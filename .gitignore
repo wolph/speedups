@@ -6,14 +6,17 @@ __pycache__/
 *.c
 *.so
 
-# Distribution
+# Building
 build/
-dist/
-eggs/
+*.egg
+*.egg-info/
 .eggs/
+eggs/
+
+# Distribution
+dist/
 sdist/
 wheels/
-*.egg
 
 # Unit test
 .tox/
