@@ -16,15 +16,15 @@ skip = 'pp* cp36-* cp37-* *-win32 *i686'
 [tool.cibuildwheel.linux]
 archs = ['x86_64', 'aarch64']
 
+
 [tool.pyright]
 include = ['speedups', 'tests']
-strict = ['speedups']
+venvPath = '.'
 stubPath = '.'
+pythonVersion = '3.8'
 pythonPlatform = 'All'
+typeCheckingMode = 'standard'
+strict = ['speedups']
 
 [tool.codespell]
 ignore-words-list = 'nd'
-
-[tool.black]
-line-length = 79
-skip-string-normalization = true
