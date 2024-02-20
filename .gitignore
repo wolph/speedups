@@ -1,5 +1,34 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# C extensions
 *.c
 *.so
-/build
-/dist
-.eggs
+
+# Distribution
+build/
+dist/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg
+
+# Unit test
+.tox/
+.nox/
+.cache
+.pytest_cache/
+
+# Environments
+.env
+.venv/
+env/
+venv/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+.idea/
