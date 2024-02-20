@@ -36,3 +36,6 @@ cython_debug/
 
 # PyCharm
 .idea/
+
+# VSCode
+.vscode
