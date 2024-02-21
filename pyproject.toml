@@ -28,3 +28,7 @@ strict = ['speedups']
 
 [tool.codespell]
 ignore-words-list = 'nd'
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
