@@ -2,8 +2,6 @@ name: Build
 
 on:
   push:
-    branches:
-      - master
   pull_request:
   workflow_dispatch:
 
@@ -25,6 +23,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: wheels-quick
           path: ./wheelhouse/*.whl
 
   build_wheels:
@@ -58,6 +57,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
 
   make_sdist:
@@ -87,5 +87,8 @@ jobs:
         with:
           name: artifact
           path: dist
+          merge-multiple: true
+
+      - run: ls -Ralh dist
 
       - uses: pypa/gh-action-pypi-publish@v1.8.11
