@@ -1,6 +1,6 @@
 __package_name__ = 'speedups'
 __import_name__ = 'speedups'
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 __author__ = 'Rick van Hattem, Joren Hammudoglu'
 __author_email__ = 'Wolph@Wol.ph, jhammudoglu@gmail.com'
 __description__ = ' '.join(
