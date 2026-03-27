@@ -39,15 +39,14 @@ def create_extension(name, *sources):
     )
 
 
-if __name__ == '__main__':
-    setuptools.setup(
-        name=about['__package_name__'],
-        author=about['__author__'],
-        author_email=about['__author_email__'],
-        description=about['__description__'],
-        url=about['__url__'],
-        ext_modules=cythonize([
-            create_extension('speedups._speedups'),
-            create_extension('speedups.psycopg_array'),
-        ], language_level=3),
-    )
+setuptools.setup(
+    name=about['__package_name__'],
+    author=about['__author__'],
+    author_email=about['__author_email__'],
+    description=about['__description__'],
+    url=about['__url__'],
+    ext_modules=cythonize([
+        create_extension('speedups._speedups'),
+        create_extension('speedups.psycopg_array'),
+    ], language_level=3),
+)
