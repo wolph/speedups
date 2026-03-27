@@ -6,7 +6,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -84,4 +84,4 @@ jobs:
         run: uv sync --group test --python ${{ matrix.python-version }}
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run pytest --cov=speedups --cov-report=term-missing --no-cov-on-fail

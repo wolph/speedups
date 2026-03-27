@@ -109,12 +109,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ['tests']
-addopts = [
-    '-v',
-    '--cov=speedups',
-    '--cov-report=term-missing',
-    '--no-cov-on-fail',
-]
+addopts = '-v'
 
 [tool.cibuildwheel]
 # Disable building PyPy wheels on all platforms
