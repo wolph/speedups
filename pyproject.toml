@@ -39,6 +39,8 @@ test = [
     'psycopg[binary]>=3.0.8',
     'pytest>=8.0.1',
     'pytest-postgresql>=5.1.0',
+    'pytest-cov>=7.0',
+    'coverage>=7.0',
 ]
 lint = [
     'ruff>=0.9',
@@ -107,7 +109,12 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ['tests']
-addopts = '-v'
+addopts = [
+    '-v',
+    '--cov=speedups',
+    '--cov-report=term-missing',
+    '--no-cov-on-fail',
+]
 
 [tool.cibuildwheel]
 # Disable building PyPy wheels on all platforms
