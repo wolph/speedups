@@ -4,8 +4,8 @@ Speedups
 .. image:: https://github.com/wolph/speedups/actions/workflows/build_wheels.yml/badge.svg
    :target: https://github.com/wolph/speedups/actions/workflows/build_wheels.yml
 
-.. image:: https://github.com/wolph/speedups/actions/workflows/tox.yml/badge.svg
-   :target: https://github.com/wolph/speedups/actions/workflows/tox.yml
+.. image:: https://github.com/wolph/speedups/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/wolph/speedups/actions/workflows/ci.yml
 
 This library contains a number of functions for speeding up critical parts
 of your Python code without having to bother with the hassle of building

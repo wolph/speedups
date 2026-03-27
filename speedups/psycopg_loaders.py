@@ -1,23 +1,27 @@
 # pyright: reportPrivateUsage=false
+from __future__ import annotations
+
 import typing
 
 import numpy as np
 import numpy.typing as npt
-import psycopg
-from psycopg.abc import Loader
 from psycopg.types import array as psycopg_array
+
+if typing.TYPE_CHECKING:
+    import psycopg
+    from psycopg.abc import Loader
 
 import speedups.psycopg_array
 
 T = typing.TypeVar('T')
-converterT = typing.Callable[[memoryview, npt.NDArray[typing.Any]], None]
+ConverterT = typing.Callable[[memoryview, npt.NDArray[typing.Any]], None]
 
 
 class NumpyLoader(psycopg_array.ArrayBinaryLoader):
     @classmethod
     def install(
-            cls,
-            cursor: typing.Union[psycopg.AsyncCursor[T], psycopg.Cursor[T]],
+        cls,
+        cursor: psycopg.AsyncCursor[T] | psycopg.Cursor[T],
     ):
         types = (
             'float4',
@@ -29,14 +33,14 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
 
         for type_ in types:
             adapter_type = cursor.adapters.types.get(f'{type_}[]')
-            assert (
-                    adapter_type is not None
-            ), f'Adapter type not found: {type_}[]'
+            assert adapter_type is not None, (
+                f'Adapter type not found: {type_}[]'
+            )
             cursor.adapters.register_loader(adapter_type.array_oid, cls)
 
     def load(  # type: ignore[override]
-            self,
-            data: memoryview,
+        self,
+        data: memoryview,
     ) -> npt.NDArray[typing.Any]:
         assert isinstance(data, memoryview)
 
@@ -46,15 +50,15 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
         rows, _, oid = struct_head.unpack_from(data)
         if rows:
             # Move "pointer" beyond header
-            data = data[struct_head.size:]
+            data = data[struct_head.size :]
         else:
             return np.empty(0)
 
         # Read dimensions
         dimensions_size = struct_dim.size * rows
-        dimensions: typing.List[int] = []
+        dimensions: list[int] = []
         for dimension, lbound in struct_dim.iter_unpack(
-                data[:dimensions_size]
+            data[:dimensions_size]
         ):
             assert lbound == 1, 'Lower bound other than 1 is not supported'
             dimensions.append(dimension)
@@ -64,6 +68,7 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
 
         loader: Loader = self._tx.get_loader(oid, self.format)
         loader_name = loader.__class__.__name__
+        dtype: type[np.generic]
         if loader_name.startswith('Float4'):
             dtype = np.float32
         elif loader_name.startswith('Float8'):
@@ -81,13 +86,12 @@ class NumpyLoader(psycopg_array.ArrayBinaryLoader):
         output: npt.NDArray[typing.Any] = np.empty(dimensions, dtype=dtype)
 
         # Convert data to numpy array
-        converter: converterT
+        converter: ConverterT
         if loader_name.startswith('Float'):
             converter = speedups.psycopg_array.float_array_to_numpy
         else:
             converter = speedups.psycopg_array.int_array_to_numpy
 
-        # Once we stop supporting Python 3.8 we can use a cast instead
         converter(data.cast('c'), output.reshape(-1))  # type: ignore[arg-type]
 
         return output

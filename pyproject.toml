@@ -1,34 +1,121 @@
+[project]
+name = 'speedups'
+dynamic = ['version']
+description = 'Library with C and Cython code for speeding up common operations.'
+readme = 'README.rst'
+license = 'BSD-3-Clause'
+requires-python = '>=3.10'
+keywords = ['Cython', 'C', 'C++', 'speedups', 'Numpy', 'PostgreSQL', 'PsycoPG']
+authors = [
+    {name = 'Rick van Hattem', email = 'Wolph@Wol.ph'},
+    {name = 'Joren Hammudoglu', email = 'jhammudoglu@gmail.com'},
+]
+dependencies = ['numpy>=1.23.5']
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Programming Language :: Cython',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+]
+
+[project.optional-dependencies]
+postgres = ['psycopg>=3.0.8']
+
+[project.urls]
+Homepage = 'https://github.com/WoLpH/speedups/'
+Repository = 'https://github.com/WoLpH/speedups/'
+
+[dependency-groups]
+dev = [
+    {include-group = 'test'},
+    {include-group = 'lint'},
+    {include-group = 'typecheck'},
+]
+test = [
+    'psycopg[binary]>=3.0.8',
+    'pytest>=8.0.1',
+    'pytest-postgresql>=5.1.0',
+]
+lint = [
+    'ruff>=0.9',
+    'codespell>=2.2',
+]
+typecheck = [
+    'pyright>=1.1',
+    'mypy>=1.13',
+]
+
 [build-system]
 requires = [
-    'setuptools >= 60',
-    'cython >= 3.0.8',
-    'numpy >= 1.23.5',
-    'wheel >= 0.37.1'
+    'setuptools>=75',
+    'cython>=3.0.8',
+    'numpy>=1.23.5',
+    'wheel>=0.37.1',
 ]
 build-backend = 'setuptools.build_meta'
 
+[tool.setuptools.dynamic]
+version = {attr = 'speedups.__about__.__version__'}
+
+[tool.setuptools.packages.find]
+include = ['speedups']
+
+[tool.setuptools.package-data]
+'*' = ['*.pyx', '*.pxd', '*.h', '*.hpp', '*.h++', '*.c', '*.cpp', '*.c++', 'py.typed']
+
+[tool.ruff]
+line-length = 79
+target-version = 'py310'
+
+[tool.ruff.format]
+quote-style = 'single'
+
+[tool.ruff.lint]
+select = ['E', 'F', 'W', 'I', 'N', 'UP', 'B', 'C4', 'SIM', 'TCH', 'RUF']
+ignore = ['W391', 'E203']
+
+[tool.ruff.lint.isort]
+known-first-party = ['speedups']
+
+[tool.pyright]
+include = ['speedups', 'tests']
+pythonVersion = '3.10'
+pythonPlatform = 'All'
+typeCheckingMode = 'standard'
+strict = ['speedups']
+
+[tool.mypy]
+python_version = '3.10'
+files = ['speedups', 'tests']
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ['speedups._speedups', 'speedups.psycopg_array']
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ['psycopg.*', 'numpy.*']
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ['tests']
+addopts = '-v'
 
 [tool.cibuildwheel]
 # Disable building PyPy wheels on all platforms
-skip = 'pp* cp36-* cp37-* *-win32 *i686'
+skip = 'pp* cp36-* cp37-* cp38-* cp39-* *-win32 *i686'
 
 # On an Linux Intel runner with qemu installed, build Intel and ARM wheels
 [tool.cibuildwheel.linux]
 archs = ['x86_64', 'aarch64']
 
-
-[tool.pyright]
-include = ['speedups', 'tests']
-venvPath = '.'
-stubPath = '.'
-pythonVersion = '3.8'
-pythonPlatform = 'All'
-typeCheckingMode = 'standard'
-strict = ['speedups']
-
 [tool.codespell]
 ignore-words-list = 'nd'
-
-[tool.black]
-line-length = 79
-skip-string-normalization = true

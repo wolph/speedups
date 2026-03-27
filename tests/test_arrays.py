@@ -15,12 +15,12 @@ def test_1d(postgresql: psycopg.Connection):
     cursor: psycopg.Cursor = postgresql.cursor(binary=True)
     psycopg_loaders.NumpyLoader.install(cursor)
 
-    query = '''
+    query = """
     COPY (
         SELECT array_agg(x)
         FROM generate_series(1, 100000) x
     ) TO STDOUT WITH BINARY
-    '''
+    """
 
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
@@ -42,7 +42,7 @@ def test_2d(postgresql: psycopg.Connection):
     cursor: psycopg.Cursor = postgresql.cursor(binary=True)
     psycopg_loaders.NumpyLoader.install(cursor)
 
-    query = '''
+    query = """
     COPY (
         SELECT
             '{{0.1, 0.2}, {0.3, 0.4}}'::float4[][],
@@ -51,7 +51,7 @@ def test_2d(postgresql: psycopg.Connection):
             '{{1, 2}, {3, 4}}'::integer[][],
             '{{1, 2}, {3, 4}}'::bigint[][]
     ) TO STDOUT WITH BINARY
-    '''
+    """
 
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
@@ -82,7 +82,7 @@ def test_cast(postgresql: psycopg.Connection):
     cursor: psycopg.Cursor = postgresql.cursor(binary=True)
     psycopg_loaders.NumpyLoader.install(cursor)
 
-    query = '''
+    query = """
     COPY (
         SELECT
             '{0.1, 0.2}'::float4[],
@@ -90,7 +90,7 @@ def test_cast(postgresql: psycopg.Connection):
             '{0.1, 0.2}'::float8[],
             '{0.1, 0.2}'::float8[]
     ) TO STDOUT WITH BINARY
-    '''
+    """
 
     copy: psycopg.Copy
     with cursor.copy(query) as copy:
@@ -117,7 +117,7 @@ def test_types(postgresql: psycopg.Connection):
     cursor: psycopg.Cursor = postgresql.cursor(binary=True)
     psycopg_loaders.NumpyLoader.install(cursor)
 
-    query = r'''
+    query = r"""
     COPY (
         SELECT
             '{0.1, 0.2}'::float4[],
@@ -131,7 +131,7 @@ def test_types(postgresql: psycopg.Connection):
             1::int4,
             'a'::text
     ) TO STDOUT WITH BINARY
-    '''
+    """
 
     copy: psycopg.Copy
     with cursor.copy(query) as copy:

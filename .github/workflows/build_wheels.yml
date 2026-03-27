@@ -19,7 +19,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: cp312-manylinux_x86_64
+          CIBW_BUILD: cp313-manylinux_x86_64
 
       - uses: actions/upload-artifact@v4
         with:
@@ -53,7 +53,6 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_ARCHS_MACOS: native
           CIBW_ARCHS_WINDOWS: AMD64
-          CIBW_SKIP: 'pp* cp36-* cp37-* *-musllinux_*'
 
       - uses: actions/upload-artifact@v4
         with:
