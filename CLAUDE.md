@@ -1,4 +1,4 @@
-# CLAUDE.md -- Speedups Project
+# Speedups Project Documentation
 
 ## Project Overview
 
@@ -80,12 +80,12 @@ as the backend with Cython and NumPy as build-time requirements.
 
 ### Dependency groups
 
-| Group     | Contents                                    |
-|-----------|---------------------------------------------|
-| dev       | Includes test + lint + typecheck groups      |
-| test      | pytest, pytest-postgresql, psycopg[binary]   |
-| lint      | ruff, codespell                              |
-| typecheck | pyright, mypy                                |
+| Group     | Contents                                   |
+|-----------|--------------------------------------------|
+| dev       | Includes test + lint + typecheck groups     |
+| test      | pytest, pytest-postgresql, psycopg[binary]  |
+| lint      | ruff, codespell                             |
+| typecheck | pyright, mypy                               |
 
 ### Optional dependencies
 
@@ -143,8 +143,7 @@ uv run pyright speedups tests
 uv run mypy speedups
 ```
 
-Pyright: standard mode, strict for `speedups/`. Mypy: checks `speedups/`
-and `tests/` with `warn_return_any`, `check_untyped_defs` enabled.
+Pyright: standard mode, strict for `speedups/`. Mypy: checks only `speedups/` with `warn_return_any`, `check_untyped_defs` enabled.
 
 ### Experimental type checkers
 
@@ -173,11 +172,11 @@ These run as `continue-on-error` in CI -- not required to pass.
 
 ### Type hints
 
-- Type hints required for all Python code
+- Type hints required for all new or modified Python modules, with small metadata/namespace modules (e.g., `speedups.__init__`, `speedups.__about__`) explicitly exempt
 - `.pyi` stub files provided for Cython modules (`_stl.pyi`,
   `psycopg_array.pyi`)
 - `py.typed` marker present for PEP 561 compliance
-- `from __future__ import annotations` used in pure Python modules
+- `from __future__ import annotations` used in type-checked pure Python modules
 
 ### Dual-checker type ignore pattern
 
@@ -214,10 +213,10 @@ Special Patterns for the full config.
 
 **build_wheels.yml** (triggered on push, pull_request, workflow_dispatch):
 
-- **Fast wheel build** -- develop branch pushes build cp313-manylinux_x86_64
+- **Fast wheel build** -- fast cp313-manylinux_x86_64 wheel build for selected refs (see `build_wheels.yml` conditions)
 - **Full wheel build** -- Version tag pushes (`refs/tags/v*`) build on
   ubuntu/windows/macos via cibuildwheel (skips PyPy, Python <3.10, win32,
-  i686). Linux: x86_64 + aarch64.
+  i686). Linux: x86_64 only.
 - **SDist + PyPI publish** -- Builds sdist and publishes all artifacts to
   PyPI using trusted publishing (`pypa/gh-action-pypi-publish`)
 
