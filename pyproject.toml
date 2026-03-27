@@ -67,20 +67,6 @@ include = ['speedups']
 [tool.setuptools.package-data]
 '*' = ['*.pyx', '*.pxd', '*.h', '*.hpp', '*.h++', '*.c', '*.cpp', '*.c++', 'py.typed']
 
-[tool.ruff]
-line-length = 79
-target-version = 'py310'
-
-[tool.ruff.format]
-quote-style = 'single'
-
-[tool.ruff.lint]
-select = ['E', 'F', 'W', 'I', 'N', 'UP', 'B', 'C4', 'SIM', 'TCH', 'RUF']
-ignore = ['W391', 'E203']
-
-[tool.ruff.lint.isort]
-known-first-party = ['speedups']
-
 [tool.pyright]
 include = ['speedups', 'tests']
 pythonVersion = '3.10'
