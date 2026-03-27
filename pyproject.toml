@@ -119,3 +119,4 @@ archs = ['x86_64', 'aarch64']
 
 [tool.codespell]
 ignore-words-list = 'nd'
+skip = '*.c,*.so'
