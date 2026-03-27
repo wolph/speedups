@@ -47,6 +47,7 @@ if __name__ == '__main__':
         description=about['__description__'],
         url=about['__url__'],
         ext_modules=cythonize([
+            create_extension('speedups._speedups'),
             create_extension('speedups.psycopg_array'),
         ], language_level=3),
     )
