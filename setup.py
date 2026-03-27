@@ -46,7 +46,7 @@ setuptools.setup(
     description=about['__description__'],
     url=about['__url__'],
     ext_modules=cythonize([
-        create_extension('speedups._speedups'),
+        create_extension('speedups._stl'),
         create_extension('speedups.psycopg_array'),
     ], language_level=3),
 )
