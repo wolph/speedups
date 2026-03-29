@@ -90,10 +90,13 @@ def ascii_read(fh, buf):
     cdef char* line
     cdef char name[LINE_SIZE]
     cdef np.ndarray[Facet, cast=True] arr = np.zeros(ALLOC_SIZE, dtype = dtype)
-    cdef size_t offset;
+    cdef size_t offset
     cdef Facet* facet = <Facet*>arr.data
     cdef size_t pos = 0
+    cdef Py_ssize_t buf_len
     cdef State state
+
+    state.fp = NULL
 
     cdef spd_locale_t new_locale = spd_create_c_locale()
     cdef spd_locale_t old_locale = spd_uselocale(new_locale)

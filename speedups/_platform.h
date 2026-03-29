@@ -31,7 +31,7 @@ static inline spd_locale_t spd_uselocale(spd_locale_t loc) {
 }
 
 static inline void spd_freelocale(spd_locale_t loc) {
-    freelocale(loc);
+    if (loc) freelocale(loc);
 }
 
 #else  /* _WIN32 */
