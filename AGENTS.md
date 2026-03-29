@@ -6,7 +6,7 @@ array to NumPy conversion. Python >=3.10, BSD-3-Clause.
 ## Build
 
 ```sh
-uv sync --all-groups
+uv sync --all-extras
 ```
 
 `setup.py` is required for Cython extension compilation -- do not remove
