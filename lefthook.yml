@@ -1,0 +1,14 @@
+pre-commit:
+  commands:
+    ruff-format:
+      glob: '**/*.py'
+      glob_matcher: doublestar
+      run: uvx ruff format {staged_files}
+      stage_fixed: true
+    ruff-check:
+      glob: '**/*.py'
+      glob_matcher: doublestar
+      run: uvx ruff check --fix {staged_files}
+      stage_fixed: true
+    ty-check:
+      run: uvx ty check speedups
