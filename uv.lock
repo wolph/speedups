@@ -782,11 +782,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-postgres = [
-    { name = "psycopg" },
-]
-
-[package.dev-dependencies]
 dev = [
     { name = "codespell" },
     { name = "coverage" },
@@ -805,6 +800,9 @@ lint = [
     { name = "codespell" },
     { name = "ruff" },
 ]
+postgres = [
+    { name = "psycopg" },
+]
 test = [
     { name = "coverage" },
     { name = "psycopg", extra = ["binary"] },
@@ -819,41 +817,23 @@ typecheck = [
 
 [package.metadata]
 requires-dist = [
+    { name = "codespell", marker = "extra == 'lint'", specifier = ">=2.2" },
+    { name = "coverage", marker = "extra == 'test'", specifier = ">=7.0" },
+    { name = "mypy", marker = "extra == 'typecheck'", specifier = ">=1.13" },
     { name = "numpy", specifier = ">=1.23.5" },
     { name = "psycopg", marker = "extra == 'postgres'", specifier = ">=3.0.8" },
+    { name = "psycopg", extras = ["binary"], marker = "extra == 'test'", specifier = ">=3.0.8" },
+    { name = "pyright", marker = "extra == 'typecheck'", specifier = ">=1.1" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8.0.1" },
+    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=7.0" },
+    { name = "pytest-postgresql", marker = "extra == 'test'", specifier = ">=5.1.0" },
+    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.9" },
+    { name = "speedups", extras = ["test", "lint", "typecheck"], marker = "extra == 'dev'" },
+    { name = "tox", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "tox-gh", marker = "extra == 'dev'", specifier = ">=1.7" },
+    { name = "tox-uv", marker = "extra == 'dev'", specifier = ">=1.28" },
 ]
-provides-extras = ["postgres"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "codespell", specifier = ">=2.2" },
-    { name = "coverage", specifier = ">=7.0" },
-    { name = "mypy", specifier = ">=1.13" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.0.8" },
-    { name = "pyright", specifier = ">=1.1" },
-    { name = "pytest", specifier = ">=8.0.1" },
-    { name = "pytest-cov", specifier = ">=7.0" },
-    { name = "pytest-postgresql", specifier = ">=5.1.0" },
-    { name = "ruff", specifier = ">=0.9" },
-    { name = "tox", specifier = ">=4.0" },
-    { name = "tox-gh", specifier = ">=1.7" },
-    { name = "tox-uv", specifier = ">=1.28" },
-]
-lint = [
-    { name = "codespell", specifier = ">=2.2" },
-    { name = "ruff", specifier = ">=0.9" },
-]
-test = [
-    { name = "coverage", specifier = ">=7.0" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.0.8" },
-    { name = "pytest", specifier = ">=8.0.1" },
-    { name = "pytest-cov", specifier = ">=7.0" },
-    { name = "pytest-postgresql", specifier = ">=5.1.0" },
-]
-typecheck = [
-    { name = "mypy", specifier = ">=1.13" },
-    { name = "pyright", specifier = ">=1.1" },
-]
+provides-extras = ["postgres", "test", "lint", "typecheck", "dev"]
 
 [[package]]
 name = "tomli"
