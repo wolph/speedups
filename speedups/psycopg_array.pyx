@@ -32,7 +32,8 @@ def float_array_to_numpy(
         const char[:] data,
         float_output_type[:] output_view,
 ):
-    cdef int i, size, count, pointer = 0
+    cdef Py_ssize_t i, count
+    cdef int size, pointer = 0
 
     count = output_view.size
 
@@ -60,7 +61,8 @@ def int_array_to_numpy(
         const char[:] data,
         int_output_type[:] output_view,
 ):
-    cdef int i, size, count, pointer = 0
+    cdef Py_ssize_t i, count
+    cdef int size, pointer = 0
 
     count = output_view.size
 

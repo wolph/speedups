@@ -1,8 +1,10 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import numpy.typing as npt
 
-converterT = Callable[[memoryview, npt.NDArray[Any]], None]
+ConverterT = Callable[[memoryview, npt.NDArray[Any]], None]
 
 def float_array_to_numpy(
     data: memoryview,
