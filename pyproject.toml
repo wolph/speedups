@@ -1,34 +1,196 @@
-[build-system]
-requires = [
-    'setuptools >= 60',
-    'cython >= 3.0.8',
-    'numpy >= 1.23.5',
-    'wheel >= 0.37.1'
+[project]
+name = 'speedups'
+version = '1.4.0'
+description = 'Library with C and Cython code for speeding up common operations.'
+readme = 'README.rst'
+license = 'BSD-3-Clause'
+requires-python = '>=3.10'
+keywords = ['Cython', 'C', 'C++', 'speedups', 'Numpy', 'PostgreSQL', 'PsycoPG']
+authors = [
+  { name = 'Rick van Hattem', email = 'Wolph@Wol.ph' },
+  { name = 'Joren Hammudoglu', email = 'jhammudoglu@gmail.com' },
 ]
+dependencies = ['numpy>=1.23.5']
+classifiers = [
+  'Development Status :: 5 - Production/Stable',
+  'Programming Language :: Cython',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: 3.14',
+]
+
+[project.optional-dependencies]
+postgres = ['psycopg>=3.0.8']
+test = [
+  'psycopg[binary]>=3.0.8',
+  'pytest>=8.0.1',
+  'pytest-postgresql>=5.1.0',
+  'pytest-cov>=7.0',
+  'coverage>=7.0',
+]
+lint = ['ruff>=0.9', 'codespell>=2.2']
+typecheck = ['pyright>=1.1', 'mypy>=1.13']
+dev = [
+  'speedups[test,lint,typecheck]',
+  'tox>=4.0',
+  'tox-uv>=1.28',
+  'tox-gh>=1.7',
+]
+
+[project.urls]
+Homepage = 'https://github.com/WoLpH/speedups/'
+Repository = 'https://github.com/WoLpH/speedups/'
+
+[build-system]
+requires = ['setuptools>=75', 'cython>=3.0.8', 'numpy>=1.23.5', 'wheel>=0.37.1']
 build-backend = 'setuptools.build_meta'
 
+[tool.setuptools.packages.find]
+include = ['speedups']
+
+[tool.setuptools.package-data]
+'*' = [
+  '*.pyx',
+  '*.pxd',
+  '*.pyi',
+  '*.h',
+  '*.hpp',
+  '*.h++',
+  '*.c',
+  '*.cpp',
+  '*.c++',
+  'py.typed',
+]
+
+[tool.pyright]
+include = ['speedups', 'tests']
+pythonVersion = '3.10'
+pythonPlatform = 'All'
+typeCheckingMode = 'standard'
+strict = ['speedups']
+
+[tool.mypy]
+python_version = '3.10'
+files = ['speedups', 'tests']
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ['speedups._stl', 'speedups.psycopg_array']
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ['psycopg.*', 'numpy.*']
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ['tests']
+addopts = '-v'
 
 [tool.cibuildwheel]
-# Disable building PyPy wheels on all platforms
-skip = 'pp* cp36-* cp37-* *-win32 *i686'
+skip = 'pp* *-win32 *i686 *-musllinux_*'
 
 # On an Linux Intel runner with qemu installed, build Intel and ARM wheels
 [tool.cibuildwheel.linux]
 archs = ['x86_64', 'aarch64']
 
-
-[tool.pyright]
-include = ['speedups', 'tests']
-venvPath = '.'
-stubPath = '.'
-pythonVersion = '3.8'
-pythonPlatform = 'All'
-typeCheckingMode = 'standard'
-strict = ['speedups']
-
 [tool.codespell]
 ignore-words-list = 'nd'
+skip = '*.c,*.so'
 
-[tool.black]
-line-length = 79
-skip-string-normalization = true
+[tool.tox]
+requires = ["tox-uv>=1.28", "tox-gh>=1.7"]
+env_list = [
+  "lint",
+  "typecheck",
+  "py310-numpy1",
+  "py310-numpy2",
+  "py311-numpy1",
+  "py311-numpy2",
+  "py312-numpy1",
+  "py312-numpy2",
+  "py313-numpy2",
+  "py314-numpy2",
+]
+
+[tool.tox.env_run_base]
+extras = ["test"]
+deps = ["numpy>=2,<3"]
+set_env = { CFLAGS = "-O0 -g" }
+change_dir = "{env_tmp_dir}"
+commands = [
+  [
+    "pytest",
+    "{tox_root}/tests",
+    "--import-mode=importlib",
+    "{posargs}",
+  ],
+]
+
+[tool.tox.env.py310-numpy1]
+deps = ["numpy>=1.24,<2"]
+
+[tool.tox.env.py311-numpy1]
+deps = ["numpy>=1.24,<2"]
+
+[tool.tox.env.py312-numpy1]
+deps = ["numpy>=1.24,<2"]
+
+[tool.tox.env.lint]
+change_dir = "{tox_root}"
+skip_install = true
+deps = ["ruff>=0.9", "codespell>=2.2"]
+commands = [
+  [
+    "ruff",
+    "check",
+    ".",
+  ],
+  [
+    "ruff",
+    "format",
+    "--check",
+    ".",
+  ],
+  [
+    "codespell",
+    ".",
+  ],
+]
+
+[tool.tox.env.typecheck]
+change_dir = "{tox_root}"
+extras = ["test", "typecheck"]
+commands = [["pyright", "speedups", "tests"], ["mypy", "speedups"]]
+
+[tool.tox.env.typecheck-experimental]
+change_dir = "{tox_root}"
+skip_install = true
+allowlist_externals = ["uvx"]
+commands = [
+  [
+    "uvx",
+    "ty",
+    "check",
+    "speedups",
+  ],
+  [
+    "uvx",
+    "pyrefly",
+    "check",
+    "speedups",
+  ],
+]
+
+[tool.tox.gh.python]
+"3.10" = ["py310-numpy1", "py310-numpy2"]
+"3.11" = ["py311-numpy1", "py311-numpy2"]
+"3.12" = ["py312-numpy1", "py312-numpy2"]
+"3.13" = ["py313-numpy2"]
+"3.14" = ["py314-numpy2"]

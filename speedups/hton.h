@@ -60,9 +60,9 @@
 #else
 
 static inline uint16_t
-apg_bswap16(uint16_t)
+apg_bswap16(uint16_t x)
 {
-    return ((x << 8) & 0xff00) | (x >> 8) & 0x00ff));
+    return ((x << 8) & 0xff00) | ((x >> 8) & 0x00ff);
 }
 
 static inline uint32_t
@@ -85,7 +85,7 @@ apg_bswap64(uint64_t x)
 		((x >> 8) & 0x00000000ff000000ULL) |
 		((x >> 24) & 0x0000000000ff0000ULL) |
 		((x >> 40) & 0x000000000000ff00ULL) |
-		((x >> 56) & 0x00000000000000ffULL);
+		((x >> 56) & 0x00000000000000ffULL)
     );
 }
 
@@ -132,7 +132,7 @@ pack_int16(char *buf, int16_t x)
 
 
 static inline void
-pack_int32(char *buf, int64_t x)
+pack_int32(char *buf, int32_t x)
 {
     uint32_t nx = apg_hton32((uint32_t)x);
     memcpy(buf, &nx, sizeof(uint32_t));
@@ -235,10 +235,8 @@ unpack_float(const char *buf)
 
 static inline double
 unpack_double(const char *buf)
-//unpack_double(const int64_t a)
 {
     union _apg_doubleconv v;
     v.i = (uint64_t)unpack_int64(buf);
-//    v.i = (uint64_t)unpack_int64(a);
     return v.f;
 }
