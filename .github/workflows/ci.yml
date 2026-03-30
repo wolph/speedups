@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uvx --with tox-uv tox run -e lint
+
+  typecheck:
+    name: Type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uvx --with tox-uv tox run -e typecheck
+      - name: Experimental type checkers
+        run: uvx --with tox-uv tox run -e typecheck-experimental
+        continue-on-error: true
+
+  setup:
+    name: Build test matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      python-versions: ${{ steps.versions.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: versions
+        run: |
+          python3 -c "
+          import tomllib, json
+          with open('pyproject.toml', 'rb') as f:
+              config = tomllib.load(f)
+          versions = sorted(config['tool']['tox']['gh']['python'])
+          print(f'versions={json.dumps(versions)}')
+          " >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(needs.setup.outputs.python-versions) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv python install ${{ matrix.python-version }}
+      - run: >-
+          uvx --python ${{ matrix.python-version }}
+          --with tox-uv --with tox-gh tox run
