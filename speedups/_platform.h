@@ -9,6 +9,10 @@
 
 #ifdef _WIN32
 #include <io.h>
+/* MSVC exposes _dup rather than POSIX dup */
+#ifndef dup
+#define dup _dup
+#endif
 #else
 #include <unistd.h>
 #endif

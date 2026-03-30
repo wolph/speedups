@@ -40,7 +40,7 @@ Before reporting work as complete, run the full tox suite and confirm
 it passes:
 
 ```sh
-uvx --with tox-uv tox run -p auto
+uvx --with tox-uv tox run-parallel
 ```
 
 All environments must pass. Do not present results to the user until
@@ -65,4 +65,5 @@ code, not the test.
 - Cython modules cannot be measured by Python coverage tools -- test
   indirectly via integration tests
 - `hton.h` is vendored from MagicStack/py-pgproto (Apache 2.0) --
-  update from upstream, don't modify in-place
+  prefer syncing from upstream; if applying a local bug-fix patch,
+  keep it minimal and document in the commit message

@@ -94,7 +94,7 @@ testpaths = ['tests']
 addopts = '-v'
 
 [tool.cibuildwheel]
-skip = '*-win32 *i686 *-musllinux_*'
+skip = 'pp* *-win32 *i686 *-musllinux_*'
 
 # On an Linux Intel runner with qemu installed, build Intel and ARM wheels
 [tool.cibuildwheel.linux]
@@ -109,7 +109,6 @@ requires = ["tox-uv>=1.28", "tox-gh>=1.7"]
 env_list = [
   "lint",
   "typecheck",
-  "typecheck-experimental",
   "py310-numpy1",
   "py310-numpy2",
   "py311-numpy1",
@@ -173,7 +172,6 @@ commands = [["pyright", "speedups", "tests"], ["mypy", "speedups"]]
 [tool.tox.env.typecheck-experimental]
 change_dir = "{tox_root}"
 skip_install = true
-ignore_outcome = true
 allowlist_externals = ["uvx"]
 commands = [
   [

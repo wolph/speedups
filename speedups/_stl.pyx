@@ -128,7 +128,6 @@ def ascii_read(fh, buf):
         while True:
 
             line = readline(&state)
-            line = state.line
 
             if strstr(line, 'endsolid') != NULL \
                     or strstr(line, 'end solid') != NULL:
