@@ -110,8 +110,14 @@ env_list = [
   "lint",
   "typecheck",
   "typecheck-experimental",
-  "py{310,311,312}-numpy{1,2}",
-  "py{313,314}-numpy2",
+  "py310-numpy1",
+  "py310-numpy2",
+  "py311-numpy1",
+  "py311-numpy2",
+  "py312-numpy1",
+  "py312-numpy2",
+  "py313-numpy2",
+  "py314-numpy2",
 ]
 
 [tool.tox.env_run_base]
