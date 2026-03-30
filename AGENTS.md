@@ -40,7 +40,7 @@ Before reporting work as complete, run the full tox suite and confirm
 it passes:
 
 ```sh
-uvx --with tox-uv tox run -p<number-of-cpu-cores>
+uvx --with tox-uv tox run -p auto
 ```
 
 All environments must pass. Do not present results to the user until
