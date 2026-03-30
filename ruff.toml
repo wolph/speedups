@@ -1,0 +1,12 @@
+line-length = 79
+target-version = 'py310'
+
+[format]
+quote-style = 'single'
+
+[lint]
+select = ['E', 'F', 'W', 'I', 'N', 'UP', 'B', 'C4', 'SIM', 'TCH', 'RUF']
+ignore = ['W391', 'E203']
+
+[lint.isort]
+known-first-party = ['speedups']
