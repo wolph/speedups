@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 260">
+  <style>
+    .title { font: bold 16px system-ui, sans-serif; fill: #000; }
+    .label { font: bold 13px system-ui, sans-serif; fill: #000; }
+    .value { font: bold 10px system-ui, sans-serif; fill: white; }
+    .speedup { font: bold 13px system-ui, sans-serif; fill: #047857; }
+    .legend { font: 12px system-ui, sans-serif; fill: #000; }
+  </style>
+  <text x="210.0" y="22" text-anchor="middle" class="title">PostgreSQL COPY → NumPy — 50M Elements</text>
+  <rect x="135.0" y="36" width="12" height="12" rx="2" fill="#f97316"/>
+  <text x="151.0" y="47" class="legend">Pure Python</text>
+  <rect x="245.0" y="36" width="12" height="12" rx="2" fill="#10b981"/>
+  <text x="261.0" y="47" class="legend">speedups</text>
+  <text x="150.0" y="76" text-anchor="middle" class="label">int32</text>
+  <rect x="100.0" y="87.7" width="45" height="122.3" rx="4" fill="#f97316"/>
+  <text x="122.5" y="152.9" text-anchor="middle" class="value">3.72 s</text>
+  <rect x="155.0" y="176.2" width="45" height="33.8" rx="4" fill="#10b981"/>
+  <text x="177.5" y="197.1" text-anchor="middle" class="value">1.03 s</text>
+  <text x="150.0" y="242" text-anchor="middle" class="speedup">3.6×</text>
+  <text x="270.0" y="76" text-anchor="middle" class="label">float64</text>
+  <rect x="220.0" y="80.0" width="45" height="130.0" rx="4" fill="#f97316"/>
+  <text x="242.5" y="149.0" text-anchor="middle" class="value">3.95 s</text>
+  <rect x="275.0" y="167.5" width="45" height="42.5" rx="4" fill="#10b981"/>
+  <text x="297.5" y="192.8" text-anchor="middle" class="value">1.29 s</text>
+  <text x="270.0" y="242" text-anchor="middle" class="speedup">3.1×</text>
+</svg>

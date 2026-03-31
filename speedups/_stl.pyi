@@ -1,3 +1,9 @@
+"""Low-level ASCII STL I/O used internally by numpy-stl.
+
+For reading and writing STL files, use numpy-stl:
+https://github.com/WoLpH/numpy-stl
+"""
+
 from typing import IO, Any
 
 import numpy as np

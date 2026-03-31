@@ -1,8 +1,8 @@
 [project]
 name = 'speedups'
 version = '1.4.0'
-description = 'Library with C and Cython code for speeding up common operations.'
-readme = 'README.rst'
+description = 'C/Cython extensions for fast STL I/O (used by numpy-stl) and PostgreSQL-to-NumPy conversion.'
+readme = 'README.md'
 license = 'BSD-3-Clause'
 requires-python = '>=3.10'
 keywords = ['Cython', 'C', 'C++', 'speedups', 'Numpy', 'PostgreSQL', 'PsycoPG']
@@ -39,6 +39,7 @@ dev = [
   'tox-uv>=1.28',
   'tox-gh>=1.7',
 ]
+benchmark = ['matplotlib>=3.7', 'psycopg[binary]>=3.0.8']
 
 [project.urls]
 Homepage = 'https://github.com/WoLpH/speedups/'

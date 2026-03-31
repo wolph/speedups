@@ -3,6 +3,9 @@
 # operations (strstr, strcmp, sscanf, fprintf) with string literals that
 # must be bytes, not unicode. The per-file directive overrides the
 # global language_level=3 in setup.py.
+#
+# This module is used internally by numpy-stl for fast ASCII STL I/O.
+# For a user-facing API, see: https://github.com/WoLpH/numpy-stl
 from libc.stdio cimport *
 from libc.string cimport memcpy, strcmp, strstr
 

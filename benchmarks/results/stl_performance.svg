@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 260">
+  <style>
+    .title { font: bold 16px system-ui, sans-serif; fill: #000; }
+    .label { font: bold 13px system-ui, sans-serif; fill: #000; }
+    .value { font: bold 10px system-ui, sans-serif; fill: white; }
+    .speedup { font: bold 13px system-ui, sans-serif; fill: #047857; }
+    .legend { font: 12px system-ui, sans-serif; fill: #000; }
+  </style>
+  <text x="210.0" y="22" text-anchor="middle" class="title">STL I/O — 10M Facets</text>
+  <rect x="135.0" y="36" width="12" height="12" rx="2" fill="#f97316"/>
+  <text x="151.0" y="47" class="legend">Pure Python</text>
+  <rect x="245.0" y="36" width="12" height="12" rx="2" fill="#10b981"/>
+  <text x="261.0" y="47" class="legend">speedups</text>
+  <text x="150.0" y="76" text-anchor="middle" class="label">Write</text>
+  <rect x="100.0" y="80.0" width="45" height="130.0" rx="4" fill="#f97316"/>
+  <text x="122.5" y="149.0" text-anchor="middle" class="value">27.16 s</text>
+  <rect x="155.0" y="166.8" width="45" height="43.2" rx="4" fill="#10b981"/>
+  <text x="177.5" y="192.4" text-anchor="middle" class="value">9.02 s</text>
+  <text x="150.0" y="242" text-anchor="middle" class="speedup">3.0×</text>
+  <text x="270.0" y="76" text-anchor="middle" class="label">Read</text>
+  <rect x="220.0" y="107.6" width="45" height="102.4" rx="4" fill="#f97316"/>
+  <text x="242.5" y="162.8" text-anchor="middle" class="value">21.40 s</text>
+  <rect x="275.0" y="176.5" width="45" height="33.5" rx="4" fill="#10b981"/>
+  <text x="297.5" y="197.2" text-anchor="middle" class="value">7.01 s</text>
+  <text x="270.0" y="242" text-anchor="middle" class="speedup">3.1×</text>
+</svg>
