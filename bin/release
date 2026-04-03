@@ -61,7 +61,8 @@ git checkout master
 git pull --ff-only origin master
 git merge develop --ff-only || {
     git checkout develop
-    die "Fast-forward merge failed — rebase develop onto master first"
+    die "Fast-forward merge failed — rebase develop onto master first.
+  To undo the version bump: git reset --soft HEAD~1"
 }
 
 # --- Tag --------------------------------------------------------------------
