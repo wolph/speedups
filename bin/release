@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- Helpers ----------------------------------------------------------------
+
+die() { printf '\033[1;31mError:\033[0m %s\n' "$1" >&2; exit 1; }
+info() { printf '\033[1;34m==>\033[0m %s\n' "$1"; }
+ok() { printf '\033[1;32m==>\033[0m %s\n' "$1"; }
+
+# --- Argument validation ----------------------------------------------------
+
+[ "${1:-}" ] || die "Usage: bin/release <version>  (e.g. 1.5.0, 1.5.0b1, 1.5.0rc1)"
+VERSION="$1"
+
+# PEP 440: N.N.N optionally followed by {a,b,rc}N
+if ! printf '%s' "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$|^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    die "Invalid PEP 440 version: $VERSION (expected e.g. 1.5.0, 1.5.0b1, 1.5.0rc1)"
+fi
+
+TAG="v${VERSION}"
+
+# --- State validation -------------------------------------------------------
+
+BRANCH="$(git symbolic-ref --short HEAD)"
+[ "$BRANCH" = "develop" ] || die "Must be on 'develop' branch (currently on '$BRANCH')"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+    die "Working tree is dirty — commit or stash changes first"
+fi
+
+CURRENT_VERSION="$(sed -n "s/^version = '\(.*\)'/\1/p" pyproject.toml)"
+info "Current version: $CURRENT_VERSION"
+info "New version:     $VERSION"
+
+# --- Run tests --------------------------------------------------------------
+
+info "Running tox (all environments)..."
+uvx --with tox-uv tox -p auto
+ok "All test environments passed"
+
+# --- Bump version -----------------------------------------------------------
+
+info "Bumping version to $VERSION"
+sed -i '' "s/^version = '.*'/version = '$VERSION'/" pyproject.toml
+
+# Verify the sed worked
+NEW="$(sed -n "s/^version = '\(.*\)'/\1/p" pyproject.toml)"
+[ "$NEW" = "$VERSION" ] || die "Version bump failed: pyproject.toml shows '$NEW'"
+
+# --- Commit -----------------------------------------------------------------
+
+info "Creating signed commit"
+git add pyproject.toml
+git commit -S -m "Release $TAG"
+
+# --- Merge to master --------------------------------------------------------
+
+info "Merging develop into master (ff-only)"
+git checkout master
+git pull --ff-only origin master
+git merge develop --ff-only || {
+    git checkout develop
+    die "Fast-forward merge failed — rebase develop onto master first"
+}
+
+# --- Tag --------------------------------------------------------------------
+
+info "Creating signed tag $TAG"
+git tag -s "$TAG" -m "Release $TAG"
+
+# --- Push -------------------------------------------------------------------
+
+printf '\n\033[1;33mPush %s to origin? [y/N]\033[0m ' "$TAG"
+read -r REPLY
+if [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ]; then
+    git checkout develop
+    die "Aborted. Tag $TAG and merge are local only — you can push later or reset."
+fi
+
+info "Pushing master + tags"
+git push origin master --follow-tags
+
+# --- Return to develop ------------------------------------------------------
+
+git checkout develop
+
+ok "Released $TAG. CI will build wheels, publish to PyPI, and create GitHub Release."
