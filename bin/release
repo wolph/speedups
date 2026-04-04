@@ -139,6 +139,31 @@ def preflight_checks(*, dry_run: bool = False) -> None:
     if diff_result.returncode != 0 or cached_result.returncode != 0:
         die('Working tree is dirty — commit or stash changes first')
 
+    # Fetch main and verify ff-only merge is possible before we
+    # make any changes.  This avoids bumping the version and then
+    # discovering the merge will fail.
+    info(f'Fetching {MAIN_BRANCH} from origin...')
+    git('fetch', 'origin', MAIN_BRANCH)
+
+    merge_base = git(
+        'merge-base',
+        f'origin/{MAIN_BRANCH}',
+        DEVELOP_BRANCH,
+        capture=True,
+    ).stdout.strip()
+    main_tip = git(
+        'rev-parse',
+        f'origin/{MAIN_BRANCH}',
+        capture=True,
+    ).stdout.strip()
+
+    if merge_base != main_tip:
+        die(
+            f'{MAIN_BRANCH} has commits not in {DEVELOP_BRANCH}. '
+            f'Rebase first:\n'
+            f'  git rebase origin/{MAIN_BRANCH}'
+        )
+
 
 # ---------------------------------------------------------------------------
 # Version helpers
@@ -542,23 +567,11 @@ def main() -> None:
     git('commit', '-S', '-m', message)
 
     # --- Merge to main ---
+    # origin/main was already fetched and verified in preflight
     info(f'Merging {DEVELOP_BRANCH} into {MAIN_BRANCH} (ff-only)')
     git('checkout', MAIN_BRANCH)
-    git('pull', '--ff-only', 'origin', MAIN_BRANCH)
-
-    merge_result = git(
-        'merge',
-        DEVELOP_BRANCH,
-        '--ff-only',
-        capture=True,
-        check=False,
-    )
-    if merge_result.returncode != 0:
-        git('checkout', DEVELOP_BRANCH)
-        die(
-            'Fast-forward merge failed — rebase develop onto master first.\n'
-            '  To undo the version bump: git reset --soft HEAD~1'
-        )
+    git('merge', f'origin/{MAIN_BRANCH}', '--ff-only')
+    git('merge', DEVELOP_BRANCH, '--ff-only')
 
     # --- Tag ---
     info(f'Creating signed tag {tag}')
