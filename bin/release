@@ -132,3 +132,56 @@ def preflight_checks() -> None:
     )
     if diff_result.returncode != 0 or cached_result.returncode != 0:
         die("Working tree is dirty — commit or stash changes first")
+
+
+# ---------------------------------------------------------------------------
+# Version helpers
+# ---------------------------------------------------------------------------
+
+
+def get_current_version() -> str:
+    """Read current version from pyproject.toml via uv."""
+    result = uv("version", "--short", capture=True)
+    return result.stdout.strip()
+
+
+def preview_bump(bump_args: list[str]) -> str:
+    """Preview what version a bump would produce, without writing.
+
+    Returns the new version string.
+    Raises SystemExit if the bump combination is invalid.
+    """
+    cmd = ["uv", "version"]
+    for arg in bump_args:
+        cmd.extend(["--bump", arg])
+    cmd.append("--dry-run")
+
+    result = run(cmd, capture=True, check=False)
+    if result.returncode != 0:
+        # uv prints the error to stderr
+        die(f"Invalid version bump: {result.stderr.strip()}")
+
+    # Output format: "package X.Y.Z => A.B.C"
+    line = result.stdout.strip()
+    return line.split("=>")[-1].strip()
+
+
+def apply_bump(bump_args: list[str]) -> str:
+    """Apply a version bump and return the new version."""
+    cmd = ["uv", "version"]
+    for arg in bump_args:
+        cmd.extend(["--bump", arg])
+    cmd.append("--frozen")
+
+    result = run(cmd, capture=True, check=False)
+    if result.returncode != 0:
+        die(f"Version bump failed: {result.stderr.strip()}")
+
+    # Read back the actual version to confirm
+    return get_current_version()
+
+
+def set_version(version: str) -> str:
+    """Set an explicit version string (for custom input)."""
+    uv("version", version, "--frozen", capture=True)
+    return get_current_version()
