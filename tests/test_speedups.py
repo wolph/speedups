@@ -6,18 +6,30 @@ import pytest
 
 from speedups import ascii_read, ascii_write
 
-DTYPE = np.dtype([
-    ('normals', np.float32, 3),
-    ('vectors', np.float32, (3, 3)),
-    ('attr', np.uint16, (1,)),
-])
+DTYPE = np.dtype(
+    [
+        ('normals', np.float32, 3),
+        ('vectors', np.float32, (3, 3)),
+        ('attr', np.uint16, (1,)),
+    ]
+)
 
-STL_ASCII_DIR = pathlib.Path(__file__).parent.parent.parent / 'numpy-stl' / 'tests' / 'stl_ascii'
+STL_ASCII_DIR = (
+    pathlib.Path(__file__).parent.parent.parent
+    / 'numpy-stl'
+    / 'tests'
+    / 'stl_ascii'
+)
 
-ASCII_FILES = sorted(STL_ASCII_DIR.glob('*.stl')) if STL_ASCII_DIR.exists() else []
+ASCII_FILES = (
+    sorted(STL_ASCII_DIR.glob('*.stl')) if STL_ASCII_DIR.exists() else []
+)
 
 
-@pytest.fixture(params=[f.name for f in ASCII_FILES], ids=[f.stem for f in ASCII_FILES])
+@pytest.fixture(
+    params=[f.name for f in ASCII_FILES],
+    ids=[f.stem for f in ASCII_FILES],
+)
 def ascii_stl(request):
     return STL_ASCII_DIR / request.param
 
@@ -46,16 +58,20 @@ def test_ascii_read_simple():
         assert name.strip() == b'test'
         assert len(data) == 1
         np.testing.assert_array_almost_equal(
-            data['normals'][0], [0.0, 0.0, 1.0],
+            data['normals'][0],
+            [0.0, 0.0, 1.0],
         )
         np.testing.assert_array_almost_equal(
-            data['vectors'][0][0], [0.0, 0.0, 0.0],
+            data['vectors'][0][0],
+            [0.0, 0.0, 0.0],
         )
         np.testing.assert_array_almost_equal(
-            data['vectors'][0][1], [1.0, 0.0, 0.0],
+            data['vectors'][0][1],
+            [1.0, 0.0, 0.0],
         )
         np.testing.assert_array_almost_equal(
-            data['vectors'][0][2], [0.0, 1.0, 0.0],
+            data['vectors'][0][2],
+            [0.0, 1.0, 0.0],
         )
 
 
@@ -96,14 +112,20 @@ def test_roundtrip():
         assert name.strip() == b'roundtrip'
         assert len(data) == 3
         np.testing.assert_array_almost_equal(
-            data['normals'], arr['normals'], decimal=5,
+            data['normals'],
+            arr['normals'],
+            decimal=5,
         )
         np.testing.assert_array_almost_equal(
-            data['vectors'], arr['vectors'], decimal=5,
+            data['vectors'],
+            arr['vectors'],
+            decimal=5,
         )
 
 
-@pytest.mark.skipif(not ASCII_FILES, reason='numpy-stl test fixtures not found')
+@pytest.mark.skipif(
+    not ASCII_FILES, reason='numpy-stl test fixtures not found'
+)
 def test_ascii_read_fixture(ascii_stl):
     """Read real STL files from numpy-stl test suite."""
     with open(ascii_stl, 'rb') as f:
