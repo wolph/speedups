@@ -428,3 +428,133 @@ def prompt_message_review(
                 message = new_msg
             else:
                 console.print("[yellow]Regeneration failed, keeping current message[/yellow]")
+
+
+# ---------------------------------------------------------------------------
+# Main release flow
+# ---------------------------------------------------------------------------
+
+
+def main() -> None:
+    """Run the full interactive release flow."""
+    # --- Preflight ---
+    preflight_checks()
+
+    # --- Version selection ---
+    current_version = get_current_version()
+    new_version, bump_args = prompt_version_menu(current_version)
+
+    tag = f"v{new_version}"
+
+    # Check tag doesn't already exist
+    tag_check = git("rev-parse", tag, capture=True, check=False)
+    if tag_check.returncode == 0:
+        die(f"Tag {tag} already exists")
+
+    # Confirm
+    console.print()
+    if not console.input(
+        f"  Release [bold]{current_version}[/bold] → "
+        f"[bold green]{new_version}[/bold green]? [y/N] "
+    ).strip().lower().startswith("y"):
+        die("Aborted")
+
+    # --- Run tests ---
+    info("Running tox (all environments)...")
+    run(["uvx", "--with", "tox-uv", "tox", "-p", "auto"])
+    ok("All test environments passed")
+
+    # --- Bump version ---
+    info(f"Bumping version to {new_version}")
+    if bump_args is not None:
+        actual = apply_bump(bump_args)
+    else:
+        actual = set_version(new_version)
+
+    if actual != new_version:
+        die(
+            f"Version mismatch after bump: expected {new_version}, "
+            f"got {actual}"
+        )
+
+    # --- Generate commit message ---
+    available_llms = detect_llm_clis()
+    if available_llms:
+        llm = prompt_llm_menu(available_llms)
+        commits = get_commit_log()
+        if commits:
+            message = generate_commit_message(
+                llm, new_version, current_version, commits
+            )
+            if message:
+                message = prompt_message_review(
+                    message, llm, new_version, current_version, commits
+                )
+            else:
+                console.print(
+                    "[yellow]LLM returned empty response, "
+                    "using default message[/yellow]"
+                )
+                message = f"Release {tag}"
+        else:
+            info("No commits between branches, using default message")
+            message = f"Release {tag}"
+    else:
+        console.print(
+            "[yellow]No LLM CLI found (claude, codex, gemini). "
+            "Using default commit message.[/yellow]"
+        )
+        message = f"Release {tag}"
+
+    # --- Commit ---
+    info("Creating signed commit")
+    git("add", "pyproject.toml")
+    git("commit", "-S", "-m", message)
+
+    # --- Merge to main ---
+    info(f"Merging {DEVELOP_BRANCH} into {MAIN_BRANCH} (ff-only)")
+    git("checkout", MAIN_BRANCH)
+    git("pull", "--ff-only", "origin", MAIN_BRANCH)
+
+    merge_result = git(
+        "merge", DEVELOP_BRANCH, "--ff-only",
+        capture=True, check=False,
+    )
+    if merge_result.returncode != 0:
+        git("checkout", DEVELOP_BRANCH)
+        die(
+            "Fast-forward merge failed — rebase develop onto master first.\n"
+            "  To undo the version bump: git reset --soft HEAD~1"
+        )
+
+    # --- Tag ---
+    info(f"Creating signed tag {tag}")
+    git("tag", "-s", tag, "-m", f"Release {tag}")
+
+    # --- Push ---
+    console.print()
+    reply = console.input(
+        f"  [bold yellow]Push {tag} to origin? [y/N][/bold yellow] "
+    ).strip().lower()
+    if not reply.startswith("y"):
+        git("checkout", DEVELOP_BRANCH)
+        die(
+            f"Aborted. Tag {tag} and merge are local only — "
+            "you can push later or reset."
+        )
+
+    info(f"Pushing {MAIN_BRANCH} + tags")
+    git("push", "origin", MAIN_BRANCH, "--follow-tags")
+
+    # --- Return to develop ---
+    git("checkout", DEVELOP_BRANCH)
+    git("push", "origin", DEVELOP_BRANCH)
+
+    ok(
+        f"Released {tag}. CI will build wheels, publish to PyPI, "
+        "and create GitHub Release."
+    )
+
+
+if __name__ == "__main__":
+    main()
