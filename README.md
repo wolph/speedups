@@ -14,7 +14,7 @@ Cython extensions run **~3x faster** than pure Python, consistent
 across data sizes.
 
 <p align="center">
-  <img src="benchmarks/results/stl_performance.svg" alt="STL I/O Performance" width="700">
+  <img src="https://raw.githubusercontent.com/wolph/speedups/develop/benchmarks/results/stl_performance.svg" alt="STL I/O Performance" width="700">
 </p>
 
 <div align="center">
@@ -33,7 +33,7 @@ across data sizes.
 </div>
 
 <p align="center">
-  <img src="benchmarks/results/pg_array_performance.svg" alt="PostgreSQL COPY to NumPy Performance" width="700">
+  <img src="https://raw.githubusercontent.com/wolph/speedups/develop/benchmarks/results/pg_array_performance.svg" alt="PostgreSQL COPY to NumPy Performance" width="700">
 </p>
 
 <div align="center">

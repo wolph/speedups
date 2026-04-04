@@ -112,8 +112,34 @@ def uv(
 # ---------------------------------------------------------------------------
 
 
-def preflight_checks(*, dry_run: bool = False) -> None:
-    """Validate branch, working tree, and tool availability."""
+def get_uncommitted_changes() -> str:
+    """Return a summary of uncommitted changes, or empty string."""
+    result = git('status', '--short', capture=True)
+    return result.stdout.strip()
+
+
+def show_uncommitted_changes(changes: str) -> None:
+    """Display uncommitted changes and offer to view the diff."""
+    console.print(
+        Panel(
+            changes,
+            title='Uncommitted Changes',
+            expand=False,
+        )
+    )
+
+    if questionary.confirm('View full diff?', default=False).ask():
+        diff = git('diff', 'HEAD', capture=True).stdout
+        console.print()
+        console.print(Panel(diff.rstrip(), title='Diff', expand=False))
+        console.print()
+
+
+def preflight_checks(*, dry_run: bool = False) -> str:
+    """Validate branch, working tree, and tool availability.
+
+    Returns a summary of uncommitted changes (may be empty).
+    """
     # Check uv is available
     if not shutil.which('uv'):
         die("'uv' is not installed or not in PATH")
@@ -124,20 +150,13 @@ def preflight_checks(*, dry_run: bool = False) -> None:
     if branch != DEVELOP_BRANCH:
         die(f"Must be on '{DEVELOP_BRANCH}' branch (currently on '{branch}')")
 
-    if dry_run:
-        return
+    # Show uncommitted changes (if any)
+    changes = get_uncommitted_changes()
+    if changes:
+        show_uncommitted_changes(changes)
 
-    # Check clean working tree
-    diff_result = run(
-        ['git', 'diff', '--quiet'],
-        check=False,
-    )
-    cached_result = run(
-        ['git', 'diff', '--cached', '--quiet'],
-        check=False,
-    )
-    if diff_result.returncode != 0 or cached_result.returncode != 0:
-        die('Working tree is dirty — commit or stash changes first')
+    if dry_run:
+        return changes
 
     # Fetch main and verify ff-only merge is possible before we
     # make any changes.  This avoids bumping the version and then
@@ -163,6 +182,8 @@ def preflight_checks(*, dry_run: bool = False) -> None:
             f'Rebase first:\n'
             f'  git rebase origin/{MAIN_BRANCH}'
         )
+
+    return changes
 
 
 # ---------------------------------------------------------------------------
@@ -490,7 +511,7 @@ def main() -> None:
         )
 
     # --- Preflight ---
-    preflight_checks(dry_run=args.test)
+    uncommitted = preflight_checks(dry_run=args.test)
 
     # --- Version selection ---
     current_version = get_current_version()
@@ -525,10 +546,29 @@ def main() -> None:
         info(f'[test] Would bump version to {new_version}')
 
     # --- Generate commit message ---
+    # Re-check for uncommitted changes (version bump added more)
+    uncommitted = get_uncommitted_changes()
+    if uncommitted:
+        console.print()
+        console.print(
+            Panel(
+                uncommitted,
+                title='Files to be committed',
+                expand=False,
+            )
+        )
+        if questionary.confirm('View full diff?', default=False).ask():
+            diff = git('diff', 'HEAD', capture=True).stdout
+            console.print()
+            console.print(Panel(diff.rstrip(), title='Diff', expand=False))
+            console.print()
+
     available_llms = detect_llm_clis()
     if available_llms:
         llm = prompt_llm_menu(available_llms)
         commits = get_commit_log()
+        if uncommitted:
+            commits += '\n\nUncommitted changes:\n' + uncommitted
         if commits:
             message = generate_commit_message(
                 llm, new_version, current_version, commits
@@ -563,7 +603,7 @@ def main() -> None:
 
     # --- Commit ---
     info('Creating signed commit')
-    git('add', 'pyproject.toml')
+    git('add', '-A')
     git('commit', '-S', '-m', message)
 
     # --- Merge to main ---
