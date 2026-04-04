@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Interactive release script with version bump menu and LLM commit messages."""
+"""Interactive release script with version bump menu
+and LLM commit messages."""
 
 from __future__ import annotations
 
@@ -17,18 +18,18 @@ try:
 except ImportError:
     print(
         "Error: 'rich' is required. Install it with:\n"
-        "  uv pip install rich\n"
-        "  pip install rich",
+        '  uv pip install rich\n'
+        '  pip install rich',
         file=sys.stderr,
     )
-    raise SystemExit(1)
+    raise SystemExit(1) from None
 
 # ---------------------------------------------------------------------------
 # Configuration — change these when adopting in another project
 # ---------------------------------------------------------------------------
 
-DEVELOP_BRANCH = "develop"
-MAIN_BRANCH = "master"
+DEVELOP_BRANCH = 'develop'
+MAIN_BRANCH = 'master'
 
 COMMIT_PROMPT_TEMPLATE = """\
 Summarize the following git commit messages into a concise release commit
@@ -53,18 +54,18 @@ console = Console()
 
 def die(msg: str) -> None:
     """Print a red error message and exit."""
-    console.print(f"[bold red]Error:[/bold red] {msg}", highlight=False)
+    console.print(f'[bold red]Error:[/bold red] {msg}', highlight=False)
     raise SystemExit(1)
 
 
 def info(msg: str) -> None:
     """Print a blue info message."""
-    console.print(f"[bold blue]==>[/bold blue] {msg}", highlight=False)
+    console.print(f'[bold blue]==>[/bold blue] {msg}', highlight=False)
 
 
 def ok(msg: str) -> None:
     """Print a green success message."""
-    console.print(f"[bold green]==>[/bold green] {msg}", highlight=False)
+    console.print(f'[bold green]==>[/bold green] {msg}', highlight=False)
 
 
 # ---------------------------------------------------------------------------
@@ -95,14 +96,14 @@ def git(
     *args: str, capture: bool = False, check: bool = True
 ) -> subprocess.CompletedProcess[str]:
     """Run a git command."""
-    return run(["git", *args], capture=capture, check=check)
+    return run(['git', *args], capture=capture, check=check)
 
 
 def uv(
     *args: str, capture: bool = False, check: bool = True
 ) -> subprocess.CompletedProcess[str]:
     """Run a uv command."""
-    return run(["uv", *args], capture=capture, check=check)
+    return run(['uv', *args], capture=capture, check=check)
 
 
 # ---------------------------------------------------------------------------
@@ -113,29 +114,26 @@ def uv(
 def preflight_checks() -> None:
     """Validate branch, working tree, and tool availability."""
     # Check uv is available
-    if not shutil.which("uv"):
+    if not shutil.which('uv'):
         die("'uv' is not installed or not in PATH")
 
     # Check branch
-    result = git("symbolic-ref", "--short", "HEAD", capture=True)
+    result = git('symbolic-ref', '--short', 'HEAD', capture=True)
     branch = result.stdout.strip()
     if branch != DEVELOP_BRANCH:
-        die(
-            f"Must be on '{DEVELOP_BRANCH}' branch "
-            f"(currently on '{branch}')"
-        )
+        die(f"Must be on '{DEVELOP_BRANCH}' branch (currently on '{branch}')")
 
     # Check clean working tree
     diff_result = run(
-        ["git", "diff", "--quiet"],
+        ['git', 'diff', '--quiet'],
         check=False,
     )
     cached_result = run(
-        ["git", "diff", "--cached", "--quiet"],
+        ['git', 'diff', '--cached', '--quiet'],
         check=False,
     )
     if diff_result.returncode != 0 or cached_result.returncode != 0:
-        die("Working tree is dirty — commit or stash changes first")
+        die('Working tree is dirty — commit or stash changes first')
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +143,7 @@ def preflight_checks() -> None:
 
 def get_current_version() -> str:
     """Read current version from pyproject.toml via uv."""
-    result = uv("version", "--short", capture=True)
+    result = uv('version', '--short', capture=True)
     return result.stdout.strip()
 
 
@@ -155,31 +153,31 @@ def preview_bump(bump_args: list[str]) -> str:
     Returns the new version string.
     Raises SystemExit if the bump combination is invalid.
     """
-    cmd = ["uv", "version"]
+    cmd = ['uv', 'version']
     for arg in bump_args:
-        cmd.extend(["--bump", arg])
-    cmd.append("--dry-run")
+        cmd.extend(['--bump', arg])
+    cmd.append('--dry-run')
 
     result = run(cmd, capture=True, check=False)
     if result.returncode != 0:
         # uv prints the error to stderr
-        die(f"Invalid version bump: {result.stderr.strip()}")
+        die(f'Invalid version bump: {result.stderr.strip()}')
 
     # Output format: "package X.Y.Z => A.B.C"
     line = result.stdout.strip()
-    return line.split("=>")[-1].strip()
+    return line.split('=>')[-1].strip()
 
 
 def apply_bump(bump_args: list[str]) -> str:
     """Apply a version bump and return the new version."""
-    cmd = ["uv", "version"]
+    cmd = ['uv', 'version']
     for arg in bump_args:
-        cmd.extend(["--bump", arg])
-    cmd.append("--frozen")
+        cmd.extend(['--bump', arg])
+    cmd.append('--frozen')
 
     result = run(cmd, capture=True, check=False)
     if result.returncode != 0:
-        die(f"Version bump failed: {result.stderr.strip()}")
+        die(f'Version bump failed: {result.stderr.strip()}')
 
     # Read back the actual version to confirm
     return get_current_version()
@@ -187,7 +185,7 @@ def apply_bump(bump_args: list[str]) -> str:
 
 def set_version(version: str) -> str:
     """Set an explicit version string (for custom input)."""
-    uv("version", version, "--frozen", capture=True)
+    uv('version', version, '--frozen', capture=True)
     return get_current_version()
 
 
@@ -203,37 +201,38 @@ def prompt_prerelease_menu(current: str) -> tuple[str, list[str]]:
     """
     # Pick component
     console.print()
-    console.print("[bold]Bump component:[/bold]")
-    console.print("  [cyan]1[/cyan]  Major")
-    console.print("  [cyan]2[/cyan]  Minor")
-    console.print("  [cyan]3[/cyan]  Patch")
+    console.print('[bold]Bump component:[/bold]')
+    console.print('  [cyan]1[/cyan]  Major')
+    console.print('  [cyan]2[/cyan]  Minor')
+    console.print('  [cyan]3[/cyan]  Patch')
     component_choice = Prompt.ask(
-        "\nComponent",
-        choices=["1", "2", "3"],
-        default="2",
+        '\nComponent',
+        choices=['1', '2', '3'],
+        default='2',
     )
-    component_map = {"1": "major", "2": "minor", "3": "patch"}
+    component_map = {'1': 'major', '2': 'minor', '3': 'patch'}
     component = component_map[component_choice]
 
     # Pick pre-release type
     console.print()
-    console.print("[bold]Pre-release type:[/bold]")
-    console.print("  [cyan]a[/cyan]  rc  (release candidate)")
-    console.print("  [cyan]b[/cyan]  beta")
-    console.print("  [cyan]c[/cyan]  alpha")
+    console.print('[bold]Pre-release type:[/bold]')
+    console.print('  [cyan]a[/cyan]  rc  (release candidate)')
+    console.print('  [cyan]b[/cyan]  beta')
+    console.print('  [cyan]c[/cyan]  alpha')
     type_choice = Prompt.ask(
-        "\nType",
-        choices=["a", "b", "c"],
-        default="a",
+        '\nType',
+        choices=['a', 'b', 'c'],
+        default='a',
     )
-    type_map = {"a": "rc", "b": "beta", "c": "alpha"}
+    type_map = {'a': 'rc', 'b': 'beta', 'c': 'alpha'}
     pre_type = type_map[type_choice]
 
     bump_args = [component, pre_type]
     new_version = preview_bump(bump_args)
 
     console.print(
-        f"\n  Preview: [bold]{current}[/bold] → [bold green]{new_version}[/bold green]"
+        f'\n  Preview: [bold]{current}[/bold] → '
+        f'[bold green]{new_version}[/bold green]'
     )
 
     return new_version, bump_args
@@ -246,53 +245,53 @@ def prompt_version_menu(current: str) -> tuple[str, list[str] | None]:
     bump_args is None when a custom version string was entered.
     """
     # Compute previews for standard bumps
-    major_v = preview_bump(["major"])
-    minor_v = preview_bump(["minor"])
-    patch_v = preview_bump(["patch"])
+    major_v = preview_bump(['major'])
+    minor_v = preview_bump(['minor'])
+    patch_v = preview_bump(['patch'])
 
     table = Table(
         show_header=False,
         box=None,
         padding=(0, 2),
     )
-    table.add_column(style="cyan", width=4)
+    table.add_column(style='cyan', width=4)
     table.add_column(width=16)
-    table.add_column(style="dim", width=3)
-    table.add_column(style="bold green")
+    table.add_column(style='dim', width=3)
+    table.add_column(style='bold green')
 
-    table.add_row("1", "Major", "→", major_v)
-    table.add_row("2", "Minor", "→", minor_v)
-    table.add_row("3", "Patch", "→", patch_v)
-    table.add_row("4", "Pre-release", "→", "(submenu)")
-    table.add_row("5", "Custom", "→", "(enter version)")
+    table.add_row('1', 'Major', '→', major_v)
+    table.add_row('2', 'Minor', '→', minor_v)
+    table.add_row('3', 'Patch', '→', patch_v)
+    table.add_row('4', 'Pre-release', '→', '(submenu)')
+    table.add_row('5', 'Custom', '→', '(enter version)')
 
     console.print()
-    console.print(f"  Current version: [bold]{current}[/bold]")
+    console.print(f'  Current version: [bold]{current}[/bold]')
     console.print()
-    console.print(Panel(table, title="Version Bump", expand=False))
+    console.print(Panel(table, title='Version Bump', expand=False))
 
     choice = Prompt.ask(
-        "Select",
-        choices=["1", "2", "3", "4", "5"],
-        default="2",
+        'Select',
+        choices=['1', '2', '3', '4', '5'],
+        default='2',
     )
 
-    if choice == "1":
-        return major_v, ["major"]
-    elif choice == "2":
-        return minor_v, ["minor"]
-    elif choice == "3":
-        return patch_v, ["patch"]
-    elif choice == "4":
+    if choice == '1':
+        return major_v, ['major']
+    elif choice == '2':
+        return minor_v, ['minor']
+    elif choice == '3':
+        return patch_v, ['patch']
+    elif choice == '4':
         return prompt_prerelease_menu(current)
     else:
         # Custom version
-        custom = Prompt.ask("Enter PEP 440 version")
+        custom = Prompt.ask('Enter PEP 440 version')
         # Validate by doing a dry-run set
-        cmd = ["uv", "version", custom, "--dry-run"]
+        cmd = ['uv', 'version', custom, '--dry-run']
         result = run(cmd, capture=True, check=False)
         if result.returncode != 0:
-            die(f"Invalid version: {result.stderr.strip()}")
+            die(f'Invalid version: {result.stderr.strip()}')
         return custom, None
 
 
@@ -301,9 +300,9 @@ def prompt_version_menu(current: str) -> tuple[str, list[str] | None]:
 # ---------------------------------------------------------------------------
 
 LLM_CLIS: dict[str, list[str]] = {
-    "claude": ["claude", "--print", "-p"],
-    "codex": ["codex", "exec"],
-    "gemini": ["gemini", "--prompt"],
+    'claude': ['claude', '--print', '-p'],
+    'codex': ['codex', 'exec'],
+    'gemini': ['gemini', '--prompt'],
 }
 
 
@@ -319,26 +318,26 @@ def detect_llm_clis() -> list[str]:
 def prompt_llm_menu(available: list[str]) -> str:
     """Let user pick an LLM CLI. Auto-selects if only one is available."""
     if len(available) == 1:
-        info(f"Using {available[0]} (only available LLM CLI)")
+        info(f'Using {available[0]} (only available LLM CLI)')
         return available[0]
 
     console.print()
-    console.print("[bold]Available LLM tools:[/bold]")
+    console.print('[bold]Available LLM tools:[/bold]')
     for i, name in enumerate(available, 1):
-        console.print(f"  [cyan]{i}[/cyan]  {name}")
+        console.print(f'  [cyan]{i}[/cyan]  {name}')
 
     choices = [str(i) for i in range(1, len(available) + 1)]
-    choice = Prompt.ask("Select LLM", choices=choices, default="1")
+    choice = Prompt.ask('Select LLM', choices=choices, default='1')
     return available[int(choice) - 1]
 
 
 def get_commit_log() -> str:
     """Get commit messages between main and develop branches."""
     result = git(
-        "log",
-        f"{MAIN_BRANCH}..{DEVELOP_BRANCH}",
-        "--format=%s%n%b",
-        "--no-merges",
+        'log',
+        f'{MAIN_BRANCH}..{DEVELOP_BRANCH}',
+        '--format=%s%n%b',
+        '--no-merges',
         capture=True,
     )
     return result.stdout.strip()
@@ -358,7 +357,7 @@ def generate_commit_message(
     )
 
     cmd_prefix = LLM_CLIS[llm]
-    info(f"Generating commit message with {llm}...")
+    info(f'Generating commit message with {llm}...')
 
     result = run(
         [*cmd_prefix, prompt],
@@ -369,9 +368,9 @@ def generate_commit_message(
 
     if result.returncode != 0:
         console.print(
-            f"[yellow]Warning:[/yellow] {llm} failed: {result.stderr.strip()}"
+            f'[yellow]Warning:[/yellow] {llm} failed: {result.stderr.strip()}'
         )
-        return ""
+        return ''
 
     return result.stdout.strip()
 
@@ -386,24 +385,30 @@ def prompt_message_review(
     """Show generated message and let user accept, edit, or regenerate."""
     while True:
         console.print()
-        console.print(Panel(message, title="Generated Commit Message", expand=False))
+        console.print(
+            Panel(
+                message,
+                title='Generated Commit Message',
+                expand=False,
+            )
+        )
         console.print()
-        console.print("  [cyan]1[/cyan]  Accept")
-        console.print("  [cyan]2[/cyan]  Edit")
-        console.print("  [cyan]3[/cyan]  Regenerate")
+        console.print('  [cyan]1[/cyan]  Accept')
+        console.print('  [cyan]2[/cyan]  Edit')
+        console.print('  [cyan]3[/cyan]  Regenerate')
 
-        choice = Prompt.ask("Action", choices=["1", "2", "3"], default="1")
+        choice = Prompt.ask('Action', choices=['1', '2', '3'], default='1')
 
-        if choice == "1":
+        if choice == '1':
             return message
-        elif choice == "2":
-            editor = os.environ.get("EDITOR", os.environ.get("VISUAL", ""))
+        elif choice == '2':
+            editor = os.environ.get('EDITOR', os.environ.get('VISUAL', ''))
             if editor:
                 # Write to temp file, open editor, read back
                 with tempfile.NamedTemporaryFile(
-                    mode="w",
-                    suffix=".txt",
-                    prefix="release-msg-",
+                    mode='w',
+                    suffix='.txt',
+                    prefix='release-msg-',
                     delete=False,
                 ) as f:
                     f.write(message)
@@ -416,22 +421,30 @@ def prompt_message_review(
                     os.unlink(tmp_path)
             else:
                 console.print(
-                    "[yellow]No $EDITOR set.[/yellow] Enter message "
-                    "(end with an empty line):"
+                    '[yellow]No $EDITOR set.[/yellow] Enter message '
+                    '(end with an empty line):'
                 )
                 lines: list[str] = []
                 while True:
                     line = input()
-                    if line == "":
+                    if line == '':
                         break
                     lines.append(line)
-                message = "\n".join(lines)
+                message = '\n'.join(lines)
         else:
-            new_msg = generate_commit_message(llm, version, old_version, commits)
+            new_msg = generate_commit_message(
+                llm,
+                version,
+                old_version,
+                commits,
+            )
             if new_msg:
                 message = new_msg
             else:
-                console.print("[yellow]Regeneration failed, keeping current message[/yellow]")
+                console.print(
+                    '[yellow]Regeneration failed, '
+                    'keeping current message[/yellow]'
+                )
 
 
 # ---------------------------------------------------------------------------
@@ -448,28 +461,33 @@ def main() -> None:
     current_version = get_current_version()
     new_version, bump_args = prompt_version_menu(current_version)
 
-    tag = f"v{new_version}"
+    tag = f'v{new_version}'
 
     # Check tag doesn't already exist
-    tag_check = git("rev-parse", tag, capture=True, check=False)
+    tag_check = git('rev-parse', tag, capture=True, check=False)
     if tag_check.returncode == 0:
-        die(f"Tag {tag} already exists")
+        die(f'Tag {tag} already exists')
 
     # Confirm
     console.print()
-    if not console.input(
-        f"  Release [bold]{current_version}[/bold] → "
-        f"[bold green]{new_version}[/bold green]? [y/N] "
-    ).strip().lower().startswith("y"):
-        die("Aborted")
+    if (
+        not console.input(
+            f'  Release [bold]{current_version}[/bold] → '
+            f'[bold green]{new_version}[/bold green]? [y/N] '
+        )
+        .strip()
+        .lower()
+        .startswith('y')
+    ):
+        die('Aborted')
 
     # --- Run tests ---
-    info("Running tox (all environments)...")
-    run(["uvx", "--with", "tox-uv", "tox", "-p", "auto"])
-    ok("All test environments passed")
+    info('Running tox (all environments)...')
+    run(['uvx', '--with', 'tox-uv', 'tox', '-p', 'auto'])
+    ok('All test environments passed')
 
     # --- Bump version ---
-    info(f"Bumping version to {new_version}")
+    info(f'Bumping version to {new_version}')
     if bump_args is not None:
         actual = apply_bump(bump_args)
     else:
@@ -477,8 +495,8 @@ def main() -> None:
 
     if actual != new_version:
         die(
-            f"Version mismatch after bump: expected {new_version}, "
-            f"got {actual}"
+            f'Version mismatch after bump: expected {new_version}, '
+            f'got {actual}'
         )
 
     # --- Generate commit message ---
@@ -496,69 +514,76 @@ def main() -> None:
                 )
             else:
                 console.print(
-                    "[yellow]LLM returned empty response, "
-                    "using default message[/yellow]"
+                    '[yellow]LLM returned empty response, '
+                    'using default message[/yellow]'
                 )
-                message = f"Release {tag}"
+                message = f'Release {tag}'
         else:
-            info("No commits between branches, using default message")
-            message = f"Release {tag}"
+            info('No commits between branches, using default message')
+            message = f'Release {tag}'
     else:
         console.print(
-            "[yellow]No LLM CLI found (claude, codex, gemini). "
-            "Using default commit message.[/yellow]"
+            '[yellow]No LLM CLI found (claude, codex, gemini). '
+            'Using default commit message.[/yellow]'
         )
-        message = f"Release {tag}"
+        message = f'Release {tag}'
 
     # --- Commit ---
-    info("Creating signed commit")
-    git("add", "pyproject.toml")
-    git("commit", "-S", "-m", message)
+    info('Creating signed commit')
+    git('add', 'pyproject.toml')
+    git('commit', '-S', '-m', message)
 
     # --- Merge to main ---
-    info(f"Merging {DEVELOP_BRANCH} into {MAIN_BRANCH} (ff-only)")
-    git("checkout", MAIN_BRANCH)
-    git("pull", "--ff-only", "origin", MAIN_BRANCH)
+    info(f'Merging {DEVELOP_BRANCH} into {MAIN_BRANCH} (ff-only)')
+    git('checkout', MAIN_BRANCH)
+    git('pull', '--ff-only', 'origin', MAIN_BRANCH)
 
     merge_result = git(
-        "merge", DEVELOP_BRANCH, "--ff-only",
-        capture=True, check=False,
+        'merge',
+        DEVELOP_BRANCH,
+        '--ff-only',
+        capture=True,
+        check=False,
     )
     if merge_result.returncode != 0:
-        git("checkout", DEVELOP_BRANCH)
+        git('checkout', DEVELOP_BRANCH)
         die(
-            "Fast-forward merge failed — rebase develop onto master first.\n"
-            "  To undo the version bump: git reset --soft HEAD~1"
+            'Fast-forward merge failed — rebase develop onto master first.\n'
+            '  To undo the version bump: git reset --soft HEAD~1'
         )
 
     # --- Tag ---
-    info(f"Creating signed tag {tag}")
-    git("tag", "-s", tag, "-m", f"Release {tag}")
+    info(f'Creating signed tag {tag}')
+    git('tag', '-s', tag, '-m', f'Release {tag}')
 
     # --- Push ---
     console.print()
-    reply = console.input(
-        f"  [bold yellow]Push {tag} to origin? [y/N][/bold yellow] "
-    ).strip().lower()
-    if not reply.startswith("y"):
-        git("checkout", DEVELOP_BRANCH)
+    reply = (
+        console.input(
+            f'  [bold yellow]Push {tag} to origin? [y/N][/bold yellow] '
+        )
+        .strip()
+        .lower()
+    )
+    if not reply.startswith('y'):
+        git('checkout', DEVELOP_BRANCH)
         die(
-            f"Aborted. Tag {tag} and merge are local only — "
-            "you can push later or reset."
+            f'Aborted. Tag {tag} and merge are local only — '
+            'you can push later or reset.'
         )
 
-    info(f"Pushing {MAIN_BRANCH} + tags")
-    git("push", "origin", MAIN_BRANCH, "--follow-tags")
+    info(f'Pushing {MAIN_BRANCH} + tags')
+    git('push', 'origin', MAIN_BRANCH, '--follow-tags')
 
     # --- Return to develop ---
-    git("checkout", DEVELOP_BRANCH)
-    git("push", "origin", DEVELOP_BRANCH)
+    git('checkout', DEVELOP_BRANCH)
+    git('push', 'origin', DEVELOP_BRANCH)
 
     ok(
-        f"Released {tag}. CI will build wheels, publish to PyPI, "
-        "and create GitHub Release."
+        f'Released {tag}. CI will build wheels, publish to PyPI, '
+        'and create GitHub Release.'
     )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
