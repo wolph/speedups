@@ -290,3 +290,141 @@ def prompt_version_menu(current: str) -> tuple[str, list[str] | None]:
         if result.returncode != 0:
             die(f"Invalid version: {result.stderr.strip()}")
         return custom, None
+
+
+# ---------------------------------------------------------------------------
+# LLM commit message generation
+# ---------------------------------------------------------------------------
+
+LLM_CLIS: dict[str, list[str]] = {
+    "claude": ["claude", "--print", "-p"],
+    "codex": ["codex", "exec"],
+    "gemini": ["gemini", "--prompt"],
+}
+
+
+def detect_llm_clis() -> list[str]:
+    """Scan PATH for available LLM CLI tools."""
+    available = []
+    for name in LLM_CLIS:
+        if shutil.which(name):
+            available.append(name)
+    return available
+
+
+def prompt_llm_menu(available: list[str]) -> str:
+    """Let user pick an LLM CLI. Auto-selects if only one is available."""
+    if len(available) == 1:
+        info(f"Using {available[0]} (only available LLM CLI)")
+        return available[0]
+
+    console.print()
+    console.print("[bold]Available LLM tools:[/bold]")
+    for i, name in enumerate(available, 1):
+        console.print(f"  [cyan]{i}[/cyan]  {name}")
+
+    choices = [str(i) for i in range(1, len(available) + 1)]
+    choice = Prompt.ask("Select LLM", choices=choices, default="1")
+    return available[int(choice) - 1]
+
+
+def get_commit_log() -> str:
+    """Get commit messages between main and develop branches."""
+    result = git(
+        "log",
+        f"{MAIN_BRANCH}..{DEVELOP_BRANCH}",
+        "--format=%s%n%b",
+        "--no-merges",
+        capture=True,
+    )
+    return result.stdout.strip()
+
+
+def generate_commit_message(
+    llm: str,
+    version: str,
+    old_version: str,
+    commits: str,
+) -> str:
+    """Generate a commit message using the chosen LLM CLI."""
+    prompt = COMMIT_PROMPT_TEMPLATE.format(
+        version=version,
+        old_version=old_version,
+        commits=commits,
+    )
+
+    cmd_prefix = LLM_CLIS[llm]
+    info(f"Generating commit message with {llm}...")
+
+    result = run(
+        [*cmd_prefix, prompt],
+        capture=True,
+        check=False,
+        timeout=120,
+    )
+
+    if result.returncode != 0:
+        console.print(
+            f"[yellow]Warning:[/yellow] {llm} failed: {result.stderr.strip()}"
+        )
+        return ""
+
+    return result.stdout.strip()
+
+
+def prompt_message_review(
+    message: str,
+    llm: str,
+    version: str,
+    old_version: str,
+    commits: str,
+) -> str:
+    """Show generated message and let user accept, edit, or regenerate."""
+    while True:
+        console.print()
+        console.print(Panel(message, title="Generated Commit Message", expand=False))
+        console.print()
+        console.print("  [cyan]1[/cyan]  Accept")
+        console.print("  [cyan]2[/cyan]  Edit")
+        console.print("  [cyan]3[/cyan]  Regenerate")
+
+        choice = Prompt.ask("Action", choices=["1", "2", "3"], default="1")
+
+        if choice == "1":
+            return message
+        elif choice == "2":
+            editor = os.environ.get("EDITOR", os.environ.get("VISUAL", ""))
+            if editor:
+                # Write to temp file, open editor, read back
+                with tempfile.NamedTemporaryFile(
+                    mode="w",
+                    suffix=".txt",
+                    prefix="release-msg-",
+                    delete=False,
+                ) as f:
+                    f.write(message)
+                    tmp_path = f.name
+                try:
+                    run([editor, tmp_path])
+                    with open(tmp_path) as f:
+                        message = f.read().strip()
+                finally:
+                    os.unlink(tmp_path)
+            else:
+                console.print(
+                    "[yellow]No $EDITOR set.[/yellow] Enter message "
+                    "(end with an empty line):"
+                )
+                lines: list[str] = []
+                while True:
+                    line = input()
+                    if line == "":
+                        break
+                    lines.append(line)
+                message = "\n".join(lines)
+        else:
+            new_msg = generate_commit_message(llm, version, old_version, commits)
+            if new_msg:
+                message = new_msg
+            else:
+                console.print("[yellow]Regeneration failed, keeping current message[/yellow]")
