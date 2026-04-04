@@ -36,6 +36,7 @@ Summarize the following git commit messages into a concise release commit
 message. The version being released is {version} (previously {old_version}).
 Focus on user-facing changes. Use conventional commit style.
 Output ONLY the commit message, no extra commentary.
+Make sure to properly attribute the authors of pull requests and the commits.
 
 Commits:
 {commits}
@@ -467,19 +468,6 @@ def main() -> None:
     tag_check = git('rev-parse', tag, capture=True, check=False)
     if tag_check.returncode == 0:
         die(f'Tag {tag} already exists')
-
-    # Confirm
-    console.print()
-    if (
-        not console.input(
-            f'  Release [bold]{current_version}[/bold] → '
-            f'[bold green]{new_version}[/bold green]? [y/N] '
-        )
-        .strip()
-        .lower()
-        .startswith('y')
-    ):
-        die('Aborted')
 
     # --- Run tests ---
     info('Running tox (all environments)...')
