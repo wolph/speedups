@@ -91,14 +91,18 @@ def run(
     )
 
 
-def git(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
+def git(
+    *args: str, capture: bool = False, check: bool = True
+) -> subprocess.CompletedProcess[str]:
     """Run a git command."""
-    return run(["git", *args], capture=capture)
+    return run(["git", *args], capture=capture, check=check)
 
 
-def uv(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
+def uv(
+    *args: str, capture: bool = False, check: bool = True
+) -> subprocess.CompletedProcess[str]:
     """Run a uv command."""
-    return run(["uv", *args], capture=capture)
+    return run(["uv", *args], capture=capture, check=check)
 
 
 # ---------------------------------------------------------------------------
