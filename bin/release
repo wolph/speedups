@@ -185,3 +185,108 @@ def set_version(version: str) -> str:
     """Set an explicit version string (for custom input)."""
     uv("version", version, "--frozen", capture=True)
     return get_current_version()
+
+
+# ---------------------------------------------------------------------------
+# Interactive version menu
+# ---------------------------------------------------------------------------
+
+
+def prompt_prerelease_menu(current: str) -> tuple[str, list[str]]:
+    """Sub-menu for pre-release version selection.
+
+    Returns (new_version, bump_args).
+    """
+    # Pick component
+    console.print()
+    console.print("[bold]Bump component:[/bold]")
+    console.print("  [cyan]1[/cyan]  Major")
+    console.print("  [cyan]2[/cyan]  Minor")
+    console.print("  [cyan]3[/cyan]  Patch")
+    component_choice = Prompt.ask(
+        "\nComponent",
+        choices=["1", "2", "3"],
+        default="2",
+    )
+    component_map = {"1": "major", "2": "minor", "3": "patch"}
+    component = component_map[component_choice]
+
+    # Pick pre-release type
+    console.print()
+    console.print("[bold]Pre-release type:[/bold]")
+    console.print("  [cyan]a[/cyan]  rc  (release candidate)")
+    console.print("  [cyan]b[/cyan]  beta")
+    console.print("  [cyan]c[/cyan]  alpha")
+    type_choice = Prompt.ask(
+        "\nType",
+        choices=["a", "b", "c"],
+        default="a",
+    )
+    type_map = {"a": "rc", "b": "beta", "c": "alpha"}
+    pre_type = type_map[type_choice]
+
+    bump_args = [component, pre_type]
+    new_version = preview_bump(bump_args)
+
+    console.print(
+        f"\n  Preview: [bold]{current}[/bold] → [bold green]{new_version}[/bold green]"
+    )
+
+    return new_version, bump_args
+
+
+def prompt_version_menu(current: str) -> tuple[str, list[str] | None]:
+    """Present the main version bump menu.
+
+    Returns (new_version, bump_args).
+    bump_args is None when a custom version string was entered.
+    """
+    # Compute previews for standard bumps
+    major_v = preview_bump(["major"])
+    minor_v = preview_bump(["minor"])
+    patch_v = preview_bump(["patch"])
+
+    table = Table(
+        show_header=False,
+        box=None,
+        padding=(0, 2),
+    )
+    table.add_column(style="cyan", width=4)
+    table.add_column(width=16)
+    table.add_column(style="dim", width=3)
+    table.add_column(style="bold green")
+
+    table.add_row("1", "Major", "→", major_v)
+    table.add_row("2", "Minor", "→", minor_v)
+    table.add_row("3", "Patch", "→", patch_v)
+    table.add_row("4", "Pre-release", "→", "(submenu)")
+    table.add_row("5", "Custom", "→", "(enter version)")
+
+    console.print()
+    console.print(f"  Current version: [bold]{current}[/bold]")
+    console.print()
+    console.print(Panel(table, title="Version Bump", expand=False))
+
+    choice = Prompt.ask(
+        "Select",
+        choices=["1", "2", "3", "4", "5"],
+        default="2",
+    )
+
+    if choice == "1":
+        return major_v, ["major"]
+    elif choice == "2":
+        return minor_v, ["minor"]
+    elif choice == "3":
+        return patch_v, ["patch"]
+    elif choice == "4":
+        return prompt_prerelease_menu(current)
+    else:
+        # Custom version
+        custom = Prompt.ask("Enter PEP 440 version")
+        # Validate by doing a dry-run set
+        cmd = ["uv", "version", custom, "--dry-run"]
+        result = run(cmd, capture=True, check=False)
+        if result.returncode != 0:
+            die(f"Invalid version: {result.stderr.strip()}")
+        return custom, None
