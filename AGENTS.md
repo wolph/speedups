@@ -52,7 +52,7 @@ code, not the test.
 
 ## Gotchas
 
-- `_stl.pyx` uses `language_level=2` intentionally (C string ops,
+- `stl.pyx` uses `language_level=2` intentionally (C string ops,
   `sscanf`/`fprintf`) -- do not "upgrade" it to 3
 - `psycopg_array.pyx` uses `language_level=3`
 - Every `.pyx` module must have a corresponding `.pyi` type stub

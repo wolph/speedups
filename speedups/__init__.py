@@ -1,3 +1,5 @@
-from speedups._stl import ascii_read, ascii_write
+"""The speedups package provides C/Cython extensions for performance.
 
-__all__ = ['ascii_read', 'ascii_write']
+Included are modules for fast STL file I/O and PostgreSQL-to-NumPy
+conversion loaders.
+"""

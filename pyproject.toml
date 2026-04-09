@@ -85,7 +85,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ['speedups._stl', 'speedups.psycopg_array']
+module = ['speedups.stl', 'speedups.psycopg_array']
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

@@ -36,7 +36,7 @@ def create_extension(name, *sources):
 setuptools.setup(
     ext_modules=cythonize(
         [
-            create_extension('speedups._stl'),
+            create_extension('speedups.stl'),
             create_extension('speedups.psycopg_array'),
         ],
         language_level=3,

@@ -1,5 +1,5 @@
 /*
- * Platform abstraction for _stl.pyx
+ * Platform abstraction for stl.pyx
  *
  * Replaces deprecated Cython IF UNAME_SYSNAME conditionals with
  * C preprocessor macros.

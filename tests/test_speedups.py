@@ -4,7 +4,7 @@ import tempfile
 import numpy as np
 import pytest
 
-from speedups import ascii_read, ascii_write
+from speedups.stl import ascii_read, ascii_write
 
 DTYPE = np.dtype(
     [

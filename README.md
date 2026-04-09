@@ -105,7 +105,7 @@ implementation uses direct `sscanf`/`fprintf` calls, avoiding Python string
 overhead entirely.
 
 ```python
-from speedups._stl import ascii_read, ascii_write
+from speedups.stl import ascii_read, ascii_write
 
 # Read
 with open("model.stl", "rb") as f:

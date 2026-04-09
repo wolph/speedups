@@ -142,7 +142,7 @@ def benchmark_stl(
     n_facets: int,
 ) -> dict[str, tuple[float, float]]:
     """Return {op: (pure_python_time, cython_time)} in seconds."""
-    from speedups._stl import ascii_read, ascii_write
+    from speedups.stl import ascii_read, ascii_write
 
     arr = _generate_stl_data(n_facets)
     results: dict[str, tuple[float, float]] = {}
