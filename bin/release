@@ -81,6 +81,8 @@ def run(
     check: bool = True,
     stdin_data: str | None = None,
     timeout: int | None = None,
+    cwd: str | None = None,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run a command via subprocess."""
     return subprocess.run(
@@ -90,9 +92,9 @@ def run(
         check=check,
         input=stdin_data,
         timeout=timeout,
+        cwd=cwd,
+        env=env,
     )
-
-
 def git(
     *args: str, capture: bool = False, check: bool = True
 ) -> subprocess.CompletedProcess[str]:
@@ -348,9 +350,16 @@ def prompt_version_menu(current: str) -> tuple[str, list[str] | None]:
 # ---------------------------------------------------------------------------
 
 LLM_CLIS: dict[str, list[str]] = {
-    'claude': ['claude', '--print', '-p'],
+    'claude': ['claude', '--permission-mode', 'auto', '--print', '-p'],
     'codex': ['codex', 'exec'],
-    'gemini': ['gemini', '--prompt'],
+    'gemini': [
+        'gemini',
+        '--approval-mode', 'plan',
+        '--extensions', '[]',
+        '--allowed-mcp-server-names', '[]',
+        '--raw-output',
+        '--accept-raw-output-risk',
+        '--prompt'],
 }
 
 
@@ -407,12 +416,27 @@ def generate_commit_message(
     cmd_prefix = LLM_CLIS[llm]
     info(f'Generating commit message with {llm}...')
 
-    result = run(
-        [*cmd_prefix, prompt],
-        capture=True,
-        check=False,
-        timeout=120,
-    )
+    # Use a temporary directory as CWD for the LLM to avoid expensive
+    # workspace discovery/onboarding logic and ensure isolation.
+    cwd = tempfile.mkdtemp(prefix=f'{llm}-release-')
+
+    # Minimal environment for the LLM to avoid background overhead.
+    env = os.environ.copy()
+    if llm == 'gemini':
+        env['GEMINI_TELEMETRY_ENABLED'] = 'false'
+        env['GEMINI_SANDBOX'] = 'false'
+
+    try:
+        result = run(
+            [*cmd_prefix, prompt],
+            capture=True,
+            check=False,
+            timeout=120,
+            cwd=cwd,
+            env=env,
+        )
+    finally:
+        shutil.rmtree(cwd)
 
     if result.returncode != 0:
         console.print(
