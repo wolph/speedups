@@ -9,6 +9,8 @@ indirectly through a fake bar that implements the protocol it drives
 
 import gc
 
+import pytest
+
 from speedups.progressbar import FastBarIterator
 
 
@@ -88,6 +90,55 @@ def test_break_finishes_dirty_on_dealloc():
     gc.collect()
     assert bar.ended == 'dirty'
     assert bar._finished
+
+
+def test_exception_finishes_dirty_on_dealloc():
+    bar = FakeBar(step=5)
+    with pytest.raises(ValueError, match='boom'):
+        for x in FastBarIterator(bar, range(1000)):
+            if x == 7:
+                raise ValueError('boom')
+    # The traceback keeps the loop frame (and iterator) alive until the
+    # exception is released; collect to force the dealloc deterministically.
+    gc.collect()
+    assert bar.ended == 'dirty'
+    assert bar._finished
+
+
+def test_iterable_exception_finishes_dirty():
+    bar = FakeBar(step=5)
+
+    def gen():
+        yield from range(5)
+        raise RuntimeError('source failed')
+
+    with pytest.raises(RuntimeError, match='source failed'):
+        for _ in FastBarIterator(bar, gen()):
+            pass
+    gc.collect()
+    assert bar.ended == 'dirty'
+    assert bar._finished
+
+
+def test_exhausted_iterator_finishes_once():
+    class CountingBar(FakeBar):
+        def __init__(self, step: int = 5) -> None:
+            super().__init__(step=step)
+            self.end_calls = 0
+
+        def _fast_end(self) -> None:
+            super()._fast_end()
+            self.end_calls += 1
+
+    bar = CountingBar()
+    it = FastBarIterator(bar, range(3))
+    assert list(it) == [0, 1, 2]
+    # Extra next() calls on the exhausted iterator keep raising StopIteration
+    # without re-running the bar's finish, like the pure-Python fallback.
+    assert next(it, None) is None
+    assert next(it, None) is None
+    assert bar.ended == 'clean'
+    assert bar.end_calls == 1
 
 
 def test_non_sequence_iterable():

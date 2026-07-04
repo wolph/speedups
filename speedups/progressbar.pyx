@@ -2,9 +2,13 @@
 """Approach B: progressbar-tailored fast iterator.
 
 The item count lives in a C field; the per-item loop does no Python attribute
-writes. ``bar.value``/``previous_value`` are synced to the bar only at redraw
-crossings (~20x/sec, like ``tqdm.n``) and once more at finish, so they stay
-plain attributes and no other code path pays any overhead.
+writes. The iterator writes back only ``bar.value``, and only at redraw
+crossings (~20x/sec, like ``tqdm.n``) and once more at finish, so it stays a
+plain attribute and no other code path pays any overhead. Any further bar
+state -- ``previous_value`` in particular -- is maintained by the bar itself
+inside its ``_fast_tick()``/``_fast_end()`` hooks (which route through
+``update()``/``finish()``); ``bar.value`` is synced right before
+``_fast_end()`` so ``finish()`` records the correct ``previous_value``.
 
 The bar must implement the small protocol used below:
 ``_fast_begin()`` (start/draw 0%), ``_fast_tick(value)`` (redraw + recompute
@@ -22,6 +26,7 @@ cdef class FastBarIterator:
     cdef Py_ssize_t _next_update
     cdef bint _started
     cdef bint _first
+    cdef bint _done
 
     def __cinit__(self, bar, iterable):
         self._it = iter(iterable)
@@ -31,6 +36,7 @@ cdef class FastBarIterator:
         self._next_update = 0
         self._started = False
         self._first = True
+        self._done = False
 
     def __iter__(self):
         return self
@@ -47,8 +53,12 @@ cdef class FastBarIterator:
         try:
             item = next(self._it)
         except StopIteration:
-            self._bar.value = self._value     # sync final count
-            self._bar._fast_end()
+            # Finish exactly once, like the generator fallback: repeated
+            # next() on an exhausted iterator must not re-run finish().
+            if not self._done:
+                self._done = True
+                self._bar.value = self._value  # sync final count
+                self._bar._fast_end()
             raise
         if self._first:
             self._first = False
@@ -67,12 +77,12 @@ cdef class FastBarIterator:
         # such hook, so do the same teardown here. CPython refcounting fires
         # this promptly when the for-loop drops its reference after a break.
         cdef object bar = self._bar
-        if self._started and bar is not None:
+        if self._started and not self._done and bar is not None:
             try:
                 if not bar._finished:
                     bar.value = self._value
                     bar._fast_end_dirty()
-            except Exception:
+            except BaseException:
                 # Teardown only (possibly during interpreter shutdown); never
                 # propagate. __dealloc__ exceptions are ignored regardless.
                 pass

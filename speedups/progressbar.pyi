@@ -12,9 +12,11 @@ import typing
 class FastBarIterator:
     """Iterates ``iterable``, driving ``bar`` and counting in a C field.
 
-    ``bar.value``/``previous_value`` are synced only at redraw crossings
+    Only ``bar.value`` is written back, and only at redraw crossings
     (~20x/sec, like ``tqdm.n``) and once more at finish, so the per-item loop
-    does no Python attribute writes.
+    does no Python attribute writes. ``previous_value`` (and any other bar
+    state) is maintained by the bar itself inside its
+    ``_fast_tick()``/``_fast_end()`` hooks.
     """
 
     def __init__(
