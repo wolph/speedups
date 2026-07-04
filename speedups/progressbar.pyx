@@ -1,5 +1,5 @@
 # cython: language_level=3, boundscheck=False, wraparound=False
-"""Approach B: progressbar-tailored fast iterator.
+"""Progressbar-tailored fast iterator.
 
 The item count lives in a C field; the per-item loop does no Python attribute
 writes. The iterator writes back only ``bar.value``, and only at redraw

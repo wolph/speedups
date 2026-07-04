@@ -40,7 +40,8 @@ DEF LINE_SIZE = 8192
 cdef struct s_State:
     FILE* fp
     char buf[BUF_SIZE]
-    char line[LINE_SIZE]
+    # +1: the EOF return path NUL-terminates after up to LINE_SIZE chars
+    char line[LINE_SIZE + 1]
     size_t pos
     size_t size
     size_t line_num

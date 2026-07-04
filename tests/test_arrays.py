@@ -178,3 +178,20 @@ def test_types(postgresql: psycopg.Connection):
             assert row[7] == pytest.approx(0.1)
             assert row[8] == 1
             assert row[9] == 'a'
+
+
+def test_empty_arrays_keep_dtype(postgresql: psycopg.Connection) -> None:
+    cursor: psycopg.Cursor = postgresql.cursor(binary=True)
+    psycopg_loaders.NumpyLoader.install(cursor)
+
+    cursor.execute(
+        "SELECT '{}'::int4[], '{}'::int8[], '{}'::float4[], '{}'::float8[]"
+    )
+    row = cursor.fetchone()
+    assert row is not None
+    int4, int8, float4, float8 = row
+    assert int4.dtype == numpy.int32
+    assert int4.shape == (0,)
+    assert int8.dtype == numpy.int64
+    assert float4.dtype == numpy.float32
+    assert float8.dtype == numpy.float64

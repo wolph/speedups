@@ -32,26 +32,37 @@ def float_array_to_numpy(
         const char[:] data,
         float_output_type[:] output_view,
 ):
-    cdef Py_ssize_t i, count
-    cdef int size, pointer = 0
+    cdef Py_ssize_t i, count, pointer = 0
+    cdef Py_ssize_t data_len = data.shape[0]
+    cdef int size
 
     count = output_view.size
 
     with nogil:
         for i in range(count):
+            if pointer + 4 > data_len:
+                with gil:
+                    raise ValueError(
+                        'Malformed array data: truncated element header')
             size = hton.unpack_int32(&data[pointer])
             pointer += 4
 
             if size == -1:
                 output_view[i] = NAN
                 continue
-            elif size == 4:
-                output_view[i] = hton.unpack_float(&data[pointer])
-            elif size == 8:
-                output_view[i] = hton.unpack_double(&data[pointer])
-            else:
+
+            if size != 4 and size != 8:
                 with gil:
                     raise TypeError(f'Unsupported output type with size {size}')
+            if pointer + size > data_len:
+                with gil:
+                    raise ValueError(
+                        'Malformed array data: truncated element')
+
+            if size == 4:
+                output_view[i] = hton.unpack_float(&data[pointer])
+            else:
+                output_view[i] = hton.unpack_double(&data[pointer])
 
             pointer += size
 
@@ -61,27 +72,38 @@ def int_array_to_numpy(
         const char[:] data,
         int_output_type[:] output_view,
 ):
-    cdef Py_ssize_t i, count
-    cdef int size, pointer = 0
+    cdef Py_ssize_t i, count, pointer = 0
+    cdef Py_ssize_t data_len = data.shape[0]
+    cdef int size
 
     count = output_view.size
 
     with nogil:
         for i in range(count):
+            if pointer + 4 > data_len:
+                with gil:
+                    raise ValueError(
+                        'Malformed array data: truncated element header')
             size = hton.unpack_int32(&data[pointer])
             pointer += 4
 
             if size == -1:
                 with gil:
                     raise ValueError('NULL values are not supported')
-            elif size == 2:
+
+            if size != 2 and size != 4 and size != 8:
+                with gil:
+                    raise TypeError(f'Unsupported output type with size {size}')
+            if pointer + size > data_len:
+                with gil:
+                    raise ValueError(
+                        'Malformed array data: truncated element')
+
+            if size == 2:
                 output_view[i] = hton.unpack_int16(&data[pointer])
             elif size == 4:
                 output_view[i] = hton.unpack_int32(&data[pointer])
-            elif size == 8:
-                output_view[i] = hton.unpack_int64(&data[pointer])
             else:
-                with gil:
-                    raise TypeError(f'Unsupported output type with size {size}')
+                output_view[i] = hton.unpack_int64(&data[pointer])
 
             pointer += size

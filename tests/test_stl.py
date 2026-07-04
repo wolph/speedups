@@ -134,3 +134,28 @@ def test_ascii_read_fixture(ascii_stl):
         assert isinstance(name, bytes)
         assert len(data) > 0
         assert data.dtype == DTYPE
+
+
+def test_ascii_read_overlong_line_raises() -> None:
+    """A single line longer than the internal line buffer must raise."""
+    content = b'solid ' + b'x' * 9000
+    with tempfile.NamedTemporaryFile(suffix='.stl') as f:
+        f.write(content)
+        f.flush()
+        f.seek(0)
+        buf = f.read(8192)
+        with pytest.raises(RuntimeError, match='Line longer'):
+            ascii_read(f, buf)
+
+
+def test_ascii_read_final_line_at_buffer_limit() -> None:
+    """A final unterminated line of exactly the line buffer size must fail
+    with a clean parse error (previously wrote one byte past the buffer)."""
+    content = b'solid x\n' + b'y' * 8192
+    with tempfile.NamedTemporaryFile(suffix='.stl') as f:
+        f.write(content)
+        f.flush()
+        f.seek(0)
+        buf = f.read(8192)
+        with pytest.raises(RuntimeError, match='Cannot read normals'):
+            ascii_read(f, buf)
