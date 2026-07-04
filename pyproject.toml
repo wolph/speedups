@@ -76,7 +76,9 @@ typeCheckingMode = 'standard'
 strict = ['speedups']
 
 [tool.mypy]
-python_version = '3.10'
+# numpy >=2.3 stubs use PEP 695 `type` statements, which mypy rejects when
+# targeting <3.12. 3.10 compatibility is still enforced by pyright above.
+python_version = '3.12'
 files = ['speedups', 'tests']
 warn_return_any = true
 warn_unused_configs = true
