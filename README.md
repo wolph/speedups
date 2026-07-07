@@ -65,6 +65,14 @@ With PostgreSQL support:
 pip install speedups[postgres]
 ```
 
+## Documentation
+
+Detailed docs live in the [`docs/`](docs/index.md) directory:
+
+- [PostgreSQL arrays to NumPy](docs/postgresql.md)
+- [ASCII STL I/O](docs/stl.md)
+- [Development](docs/development.md)
+
 ## PostgreSQL Array → NumPy
 
 Convert PostgreSQL arrays directly to NumPy ndarrays using psycopg's
