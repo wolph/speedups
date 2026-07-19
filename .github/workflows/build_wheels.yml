@@ -142,12 +142,36 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.ref_name }}
-        run: >
-          gh release create "$TAG_NAME"
-          --generate-notes
-          ${{ steps.prerelease.outputs.flag }}
-          dist/*
+        shell: bash
+        run: |
+          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release create "$TAG_NAME" \
+              --generate-notes \
+              ${{ steps.prerelease.outputs.flag }} \
+              dist/*
+            exit 0
+          fi
+
+          existing_assets="$(
+            gh release view "$TAG_NAME" \
+              --json assets \
+              --jq '.assets[].name'
+          )"
+          upload_assets=()
+
+          for asset in dist/*; do
+            asset_name="$(basename "$asset")"
+            if grep -Fxq -- "$asset_name" <<< "$existing_assets"; then
+              echo "Skipping existing asset: $asset_name"
+            else
+              upload_assets+=("$asset")
+            fi
+          done
+
+          if ((${#upload_assets[@]})); then
+            gh release upload "$TAG_NAME" "${upload_assets[@]}"
+          fi
