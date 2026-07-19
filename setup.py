@@ -38,6 +38,7 @@ setuptools.setup(
         [
             create_extension('speedups.stl'),
             create_extension('speedups.psycopg_array'),
+            create_extension('speedups.progressbar'),
         ],
         language_level=3,
     ),

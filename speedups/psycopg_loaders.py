@@ -71,30 +71,14 @@ class NumpyLoader(psycopg.types.array.ArrayBinaryLoader):
 
         Raises:
             TypeError: If the loader type is unsupported.
+            ValueError: If the array uses a lower bound other than 1.
         """
         assert isinstance(data, memoryview)
 
         struct_head = psycopg.types.array._struct_head
         struct_dim = psycopg.types.array._struct_dim
 
-        rows, _, oid = struct_head.unpack_from(data)
-        if rows:
-            # Move 'pointer' beyond header
-            data = data[struct_head.size :]
-        else:
-            return np.empty(0)
-
-        # Read dimensions
-        dimensions_size = struct_dim.size * rows
-        dimensions: list[int] = []
-        for dimension, lbound in struct_dim.iter_unpack(
-            data[:dimensions_size]
-        ):
-            assert lbound == 1, 'Lower bound other than 1 is not supported'
-            dimensions.append(dimension)
-
-        # Move 'pointer' beyond dimension headers
-        data = data[dimensions_size:]
+        ndims, _, oid = struct_head.unpack_from(data)
 
         loader: psycopg.abc.Loader = self._tx.get_loader(oid, self.format)
         loader_name: str = loader.__class__.__name__
@@ -114,6 +98,25 @@ class NumpyLoader(psycopg.types.array.ArrayBinaryLoader):
             case _:
                 raise TypeError(f'Unsupported loader type: {loader_name}')
 
+        if not ndims:
+            return np.empty(0, dtype=dtype)
+
+        # Move 'pointer' beyond header
+        data = data[struct_head.size :]
+
+        # Read dimensions
+        dimensions_size = struct_dim.size * ndims
+        dimensions: list[int] = []
+        for dimension, lbound in struct_dim.iter_unpack(
+            data[:dimensions_size]
+        ):
+            if lbound != 1:
+                raise ValueError('Lower bound other than 1 is not supported')
+            dimensions.append(dimension)
+
+        # Move 'pointer' beyond dimension headers
+        data = data[dimensions_size:]
+
         # Create numpy output array
         output: npt.NDArray[typing.Any] = np.empty(dimensions, dtype=dtype)
 
@@ -125,6 +128,9 @@ class NumpyLoader(psycopg.types.array.ArrayBinaryLoader):
             converter = speedups.psycopg_array.int_array_to_numpy
 
         # Convert and fill the array
-        converter(data.cast('c'), output.reshape(-1))  # type: ignore[arg-type]
+        converter(
+            data.cast('c'),
+            output.reshape(-1),  # pyright: ignore[reportUnknownMemberType]
+        )
 
         return output
