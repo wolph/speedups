@@ -199,3 +199,6 @@ commands = [
 "3.12" = ["py312-numpy1", "py312-numpy2"]
 "3.13" = ["py313-numpy2"]
 "3.14" = ["py314-numpy2"]
+
+[tool.uv]
+exclude-newer = "14 days"
