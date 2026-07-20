@@ -23,7 +23,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
+        run: python -m pip install cibuildwheel==4.1.0
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
@@ -36,12 +36,19 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    timeout-minutes: 15
-    runs-on: ${{ matrix.os }}
+    name: Build wheels (${{ matrix.name }})
+    timeout-minutes: 30
+    runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - { name: linux-x86_64, runner: ubuntu-latest }
+          - { name: linux-aarch64, runner: ubuntu-24.04-arm }
+          - { name: windows-amd64, runner: windows-latest }
+          - { name: windows-arm64, runner: windows-11-arm }
+          - { name: macos-arm64, runner: macos-latest }
+          - { name: macos-x86_64, runner: macos-15-intel }
 
     steps:
       - uses: actions/checkout@v4
@@ -53,18 +60,14 @@ jobs:
           python-version: '3.13'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
+        run: python -m pip install cibuildwheel==4.1.0
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_ARCHS_MACOS: native
-          CIBW_ARCHS_WINDOWS: AMD64
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-${{ matrix.name }}
           path: ./wheelhouse/*.whl
 
   make_sdist:
