@@ -9,7 +9,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-07-31T15:42:10.456612Z"
+exclude-newer = "2026-07-31T16:19:14.386484Z"
 exclude-newer-span = "P14D"
 
 [[package]]
@@ -1552,7 +1552,7 @@ wheels = [
 
 [[package]]
 name = "speedups"
-version = "2.3.1"
+version = "2.3.2"
 source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
