@@ -62,9 +62,9 @@ include = ['speedups']
   '*.h',
   '*.hpp',
   '*.h++',
-  '*.c',
-  '*.cpp',
-  '*.c++',
+  # Generated .c/.cpp files are deliberately not packaged: cythonize()
+  # always runs at build time, and a shipped .c generated against one
+  # numpy's pxd fails to compile against another numpy's headers.
   'py.typed',
 ]
 
