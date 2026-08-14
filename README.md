@@ -78,7 +78,7 @@ from 1D to N-D.
 import psycopg
 from speedups.psycopg_loaders import NumpyLoader
 
-with psycopg.connect("dbname=mydb") as conn:
+with psycopg.connect('dbname=mydb') as conn:
     cursor = conn.cursor(binary=True)
     NumpyLoader.install(cursor)
 
@@ -90,7 +90,7 @@ with psycopg.connect("dbname=mydb") as conn:
     """
 
     with cursor.copy(query) as copy:
-        copy.set_types(["integer[]"])
+        copy.set_types(['integer[]'])
 
         for row in copy.rows():
             print(row)  # numpy.ndarray
@@ -108,13 +108,13 @@ overhead entirely.
 from speedups.stl import ascii_read, ascii_write
 
 # Read
-with open("model.stl", "rb") as f:
+with open('model.stl', 'rb') as f:
     buf = f.read(8192)
     name, mesh = ascii_read(f, buf)
 
 # Write
-with open("output.stl", "wb") as f:
-    ascii_write(f, b"my_model", mesh)
+with open('output.stl', 'wb') as f:
+    ascii_write(f, b'my_model', mesh)
 ```
 
 ## Supported Types
