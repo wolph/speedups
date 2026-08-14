@@ -1,6 +1,6 @@
 [project]
 name = 'speedups'
-version = "2.3.2"
+version = "2.3.3"
 description = 'C/Cython extensions for fast STL I/O (used by numpy-stl) and PostgreSQL-to-NumPy conversion.'
 readme = 'README.md'
 license = 'BSD-3-Clause AND Apache-2.0'
