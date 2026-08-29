@@ -17,9 +17,9 @@ import numpy as np
 
 mesh_dtype = np.dtype(
     [
-        ("normals", np.float32, 3),
-        ("vectors", np.float32, (3, 3)),
-        ("attr", np.uint16, (1,)),
+        ('normals', np.float32, 3),
+        ('vectors', np.float32, (3, 3)),
+        ('attr', np.uint16, (1,)),
     ]
 )
 ```
@@ -45,7 +45,7 @@ with open('model.stl', 'rb') as fh:
 
 print(name.strip())
 print(mesh.dtype)
-print(mesh["vectors"].shape)
+print(mesh['vectors'].shape)
 ```
 
 The first printed value is the STL solid name as `bytes`. ASCII uppercase
@@ -71,15 +71,15 @@ from speedups.stl import ascii_write
 
 mesh_dtype = np.dtype(
     [
-        ("normals", np.float32, 3),
-        ("vectors", np.float32, (3, 3)),
-        ("attr", np.uint16, (1,)),
+        ('normals', np.float32, 3),
+        ('vectors', np.float32, (3, 3)),
+        ('attr', np.uint16, (1,)),
     ]
 )
 
 mesh = np.zeros(1, dtype=mesh_dtype)
-mesh["normals"][0] = [0.0, 0.0, 1.0]
-mesh["vectors"][0] = [
+mesh['normals'][0] = [0.0, 0.0, 1.0]
+mesh['vectors'][0] = [
     [0.0, 0.0, 0.0],
     [1.0, 0.0, 0.0],
     [0.0, 1.0, 0.0],
