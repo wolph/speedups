@@ -1,9 +1,9 @@
 [project]
 name = 'speedups'
-version = "2.1.0"
+version = "2.3.3"
 description = 'C/Cython extensions for fast STL I/O (used by numpy-stl) and PostgreSQL-to-NumPy conversion.'
 readme = 'README.md'
-license = 'BSD-3-Clause'
+license = 'BSD-3-Clause AND Apache-2.0'
 requires-python = '>=3.10'
 keywords = ['Cython', 'C', 'C++', 'speedups', 'Numpy', 'PostgreSQL', 'PsycoPG']
 authors = [
@@ -62,9 +62,9 @@ include = ['speedups']
   '*.h',
   '*.hpp',
   '*.h++',
-  '*.c',
-  '*.cpp',
-  '*.c++',
+  # Generated .c/.cpp files are deliberately not packaged: cythonize()
+  # always runs at build time, and a shipped .c generated against one
+  # numpy's pxd fails to compile against another numpy's headers.
   'py.typed',
 ]
 
@@ -99,11 +99,12 @@ testpaths = ['tests']
 addopts = '-v'
 
 [tool.cibuildwheel]
-skip = 'pp* *-win32 *i686 *-musllinux_*'
-
-# On an Linux Intel runner with qemu installed, build Intel and ARM wheels
-[tool.cibuildwheel.linux]
-archs = ['x86_64', 'aarch64']
+# pp*/i686/win32 are defensive (already opt-in since cibuildwheel 3.0).
+# cp310-win_arm64 skipped: numpy never shipped cp310 win_arm64 wheels,
+# so neither the build env (setup.py needs numpy) nor users can install it.
+skip = 'pp* *-win32 *i686 cp310-win_arm64'
+test-requires = ['pytest>=8.0.1']
+test-command = 'python -m pytest {project}/tests --ignore={project}/tests/test_arrays.py --import-mode=importlib -q'
 
 [tool.codespell]
 ignore-words-list = 'nd'
@@ -199,3 +200,6 @@ commands = [
 "3.12" = ["py312-numpy1", "py312-numpy2"]
 "3.13" = ["py313-numpy2"]
 "3.14" = ["py314-numpy2"]
+
+[tool.uv]
+exclude-newer = "14 days"

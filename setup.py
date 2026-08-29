@@ -41,5 +41,8 @@ setuptools.setup(
             create_extension('speedups.progressbar'),
         ],
         language_level=3,
+        # A .c generated against one numpy's pxd fails to compile against
+        # another numpy's headers, so never trust a pre-existing .c file.
+        force=True,
     ),
 )

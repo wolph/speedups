@@ -23,6 +23,13 @@
  */
 #if !defined(_WIN32)
 #include <locale.h>
+/*
+ * Apple declares locale_t/newlocale/uselocale/freelocale in <xlocale.h>
+ * (see newlocale(3)); only recent SDKs re-expose them via <locale.h>.
+ */
+#if defined(__APPLE__)
+#include <xlocale.h>
+#endif
 
 typedef locale_t spd_locale_t;
 

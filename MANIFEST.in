@@ -1,0 +1,5 @@
+# Keep Cython-generated C out of the sdist: setup.py cythonizes with
+# force=True at build time, so shipping .c files only risks compiling
+# code generated against a different numpy than the build environment's.
+recursive-exclude speedups *.c
+recursive-exclude speedups *.cpp

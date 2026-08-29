@@ -8,6 +8,10 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 
+[options]
+exclude-newer = "2026-07-31T16:42:40.158807Z"
+exclude-newer-span = "P14D"
+
 [[package]]
 name = "ast-serialize"
 version = "0.6.0"
@@ -1548,7 +1552,7 @@ wheels = [
 
 [[package]]
 name = "speedups"
-version = "2.1.0"
+version = "2.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
