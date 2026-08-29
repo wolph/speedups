@@ -62,12 +62,13 @@ pip install speedups
 With PostgreSQL support:
 
 ```bash
-pip install speedups[postgres]
+pip install "speedups[postgres]"
 ```
 
 ## Documentation
 
-Detailed docs live in the [`docs/`](docs/index.md) directory:
+The README gets you to the first working call. These guides cover the details
+and failure modes:
 
 - [PostgreSQL arrays to NumPy](docs/postgresql.md)
 - [ASCII STL I/O](docs/stl.md)

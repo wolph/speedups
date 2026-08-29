@@ -1,13 +1,13 @@
-# Speedups Documentation
+# Speedups documentation
 
-`speedups` contains C and Cython extensions for narrow performance-critical
-paths:
+`speedups` handles two narrow paths where creating Python objects adds
+measurable overhead:
 
-- ASCII STL parsing and writing used by `numpy-stl`.
-- psycopg 3 binary PostgreSQL array loading into NumPy arrays.
+- Parse and write ASCII STL data for `numpy-stl`.
+- Load psycopg 3 binary PostgreSQL arrays directly into NumPy arrays.
 
-The README is the short package landing page. These docs cover the working
-details, API contracts, and maintainer commands.
+The README gets you to the first working call. These guides cover the API
+contracts, failure modes, and maintainer commands you need after that.
 
 ## Guides
 
@@ -17,7 +17,6 @@ details, API contracts, and maintainer commands.
 
 ## Scope
 
-This package is intentionally small. It does not provide a general PostgreSQL
-client, a high-level STL mesh API, or a documentation website. It exposes fast
-building blocks for projects that already know when those low-level paths are
-the right tool.
+This package is intentionally small. It is not a PostgreSQL client or a
+high-level STL mesh API. Use it when your project already owns those layers and
+needs a faster conversion step underneath them.

@@ -1,15 +1,16 @@
 # PostgreSQL Arrays to NumPy
 
-`speedups.psycopg_loaders.NumpyLoader` registers psycopg 3 binary array loaders
-that decode supported PostgreSQL numeric arrays directly into `numpy.ndarray`
-values.
+Psycopg normally creates Python values while it decodes a PostgreSQL array.
+That intermediate work adds up when the result is going straight into NumPy.
+`speedups.psycopg_loaders.NumpyLoader` replaces the supported binary array
+loaders and fills a `numpy.ndarray` directly.
 
 Use it when all of these are true:
 
-- You are reading PostgreSQL array values through psycopg 3.
-- The data uses psycopg's binary format, especially binary `COPY`.
+- You read PostgreSQL array values through psycopg 3.
+- The query returns psycopg's binary format, usually through binary `COPY`.
 - The element type is one of the supported numeric types.
-- The result will be processed with NumPy.
+- You process the result with NumPy.
 
 ## Installation
 
@@ -19,14 +20,15 @@ Install the PostgreSQL extra:
 pip install "speedups[postgres]"
 ```
 
-The quotes are useful in shells such as zsh, where unquoted square brackets can
-be interpreted as glob syntax.
+> [!TIP]
+> Keep the quotes in zsh. Without them, the shell can interpret the square
+> brackets as a glob before pip sees the package extra.
 
 ## Complete COPY Example
 
-The optimized path depends on a binary cursor and a binary `COPY` stream. Call
-`copy.set_types()` before reading rows so psycopg knows which loaders to use for
-the binary columns.
+This COPY path needs `COPY ... WITH BINARY`. You must also call
+`copy.set_types()` before reading rows. That call tells psycopg which binary
+loader belongs to each column:
 
 ```python
 import psycopg
@@ -42,20 +44,28 @@ COPY (
 ) TO STDOUT WITH BINARY
 """
 
-with psycopg.connect("dbname=mydb") as conn:
-    cursor = conn.cursor(binary=True)
+with psycopg.connect('dbname=mydb') as conn:
+    cursor = conn.cursor()
     NumpyLoader.install(cursor)
 
     with cursor.copy(query) as copy:
-        copy.set_types(["integer[]", "float8[]"])
+        copy.set_types(['integer[]', 'float8[]'])
 
         for integers, floats in copy.rows():
             print(integers.dtype, integers.shape, integers.sum())
             print(floats.dtype, floats.shape, floats.mean())
 ```
 
-The rows yielded by `copy.rows()` contain NumPy arrays for supported numeric
-arrays. Other column types continue to use the loaders registered by psycopg.
+The example prints:
+
+```text
+int32 (100000,) 5000050000
+float64 (100000,) 5000.05
+```
+
+The dtypes come from the PostgreSQL element types passed to `set_types()`. The
+shape shows that each `array_agg()` result contains 100,000 elements. Columns
+outside the supported table keep using psycopg's registered loaders.
 
 ## Supported Types
 
@@ -67,19 +77,21 @@ arrays. Other column types continue to use the loaders registered by psycopg.
 | `integer[]` / `int4[]` | `int32` | 1D to ND |
 | `bigint[]` / `int8[]` | `int64` | 1D to ND |
 
-`NumpyLoader.install(cursor)` registers loaders for the supported array OIDs on
-that cursor's adapter map. If psycopg cannot resolve one of the required array
-types on the connection, installation raises `KeyError`.
+`NumpyLoader.install(cursor)` changes only that cursor's adapter map. It
+registers the array OID for every supported type. Installation raises
+`KeyError` when the connection cannot resolve one of those OIDs.
 
 ## Shapes and Empty Arrays
 
-PostgreSQL array dimensions are preserved:
+PostgreSQL stores array dimensions in its binary header. The loader uses that
+header to preserve the shape:
 
 ```sql
 SELECT '{{1, 2}, {3, 4}}'::integer[][]
 ```
 
-decodes as an `int32` NumPy array with shape `(2, 2)`.
+The query decodes as an `int32` NumPy array with shape `(2, 2)`. Two dimensions
+in PostgreSQL therefore remain two dimensions in NumPy.
 
 Empty supported arrays keep their dtype and use shape `(0,)`:
 
@@ -87,47 +99,55 @@ Empty supported arrays keep their dtype and use shape `(0,)`:
 SELECT '{}'::int4[], '{}'::float8[]
 ```
 
-decodes to `int32` and `float64` arrays with no elements.
+These values decode to `int32` and `float64` arrays with no elements.
 
 ## NULL Values
 
-NULL handling depends on the target dtype:
+NULL handling depends on whether the NumPy dtype can represent a missing value:
 
 - Float arrays decode NULL elements as `NaN`.
 - Integer arrays raise `ValueError` because integer NumPy dtypes cannot
   represent PostgreSQL NULL values.
 
-If you need nullable integer arrays, convert them in SQL before COPY, choose a
-float representation with `NaN`, or use psycopg's regular Python-list loaders.
+If you need nullable integer arrays, I would keep psycopg's regular Python-list
+loader and choose the missing-value representation after decoding. Converting
+the data to a floating-point array with `NaN` in SQL is also valid when that
+change matches the application.
 
 ## Lower Bounds
 
-PostgreSQL arrays can have non-default lower bounds. This loader supports only
-arrays whose lower bound is 1. Arrays with another lower bound raise
-`ValueError`.
+PostgreSQL arrays can start at a lower bound other than 1. NumPy has no matching
+lower-bound concept, so this loader accepts only a lower bound of 1. Any other
+lower bound raises `ValueError` instead of silently shifting the indexes.
 
 ## Troubleshooting
 
 ### Rows contain Python lists
 
-Check that the cursor is binary and that `copy.set_types()` uses array types:
+For a regular `SELECT`, create a binary cursor so psycopg selects binary
+loaders. A binary COPY gets its format from `COPY ... WITH BINARY`, so the
+cursor itself does not need `binary=True`. In both cases, install the loader on
+the cursor that reads the result:
 
 ```python
-cursor = conn.cursor(binary=True)
+cursor = conn.cursor()
 NumpyLoader.install(cursor)
 
-with cursor.copy(query) as copy:
-    copy.set_types(["integer[]"])
+with cursor.copy(binary_copy_query) as copy:
+    copy.set_types(['integer[]'])
 ```
+
+The brackets in `'integer[]'` matter. Passing `'integer'` selects the scalar
+loader, which does not produce a NumPy array.
 
 ### `KeyError: Adapter type not found`
 
-The connection could not find one of the supported PostgreSQL array types while
-installing the loader. Check that the connection is usable and that psycopg has
-loaded the built-in PostgreSQL type metadata.
+The connection could not resolve one of the supported PostgreSQL array OIDs.
+Check the connection before calling `NumpyLoader.install()` and confirm that
+psycopg loaded the built-in PostgreSQL type metadata.
 
 ### Unsupported array type
 
-Only the numeric array types listed above use the optimized loader. Text,
-boolean, JSON, UUID, and user-defined arrays should use psycopg's regular
-loaders unless support is added explicitly.
+Only the numeric array types listed above use the optimized loader. Keep
+psycopg's regular loaders for text, boolean, JSON, UUID, and user-defined
+arrays.

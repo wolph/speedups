@@ -16,14 +16,19 @@ or replace it.
 
 ```sh
 uv run pytest tests/test_stl.py       # no external deps
-uv run pytest tests/test_arrays.py    # requires running PostgreSQL
+uv run pytest tests/test_arrays.py    # requires local PostgreSQL binaries
 ```
 
-Quick PG setup:
+The PostgreSQL integration tests use `pytest-postgresql`. Its `postgresql`
+fixture starts a temporary local server. It finds `pg_ctl` by running
+`pg_config --bindir`, so only `pg_config` must be available on `PATH`:
 
 ```sh
-docker run -d --name test-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+command -v pg_config
+pg_config --bindir
 ```
+
+An unrelated Docker container does not satisfy this fixture.
 
 ## Lint & Typecheck
 
