@@ -21,7 +21,13 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+      - name: Apply Ruff fixes to pull requests
+        if: github.event_name == 'pull_request'
+        run: uvx --with tox-uv tox -e ruff-fix
       - run: uvx --with tox-uv tox run -e lint
+        env:
+          RUFF_OUTPUT_FORMAT: >-
+            ${{ github.event_name == 'pull_request' && 'github' || 'full' }}
 
   typecheck:
     name: Type check

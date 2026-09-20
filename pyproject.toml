@@ -149,6 +149,7 @@ deps = ["numpy>=1.24,<2"]
 deps = ["numpy>=1.24,<2"]
 
 [tool.tox.env.lint]
+pass_env = ["RUFF_OUTPUT_FORMAT"]
 change_dir = "{tox_root}"
 skip_install = true
 deps = ["ruff>=0.9", "codespell>=2.2"]
@@ -169,6 +170,14 @@ commands = [
     ".",
   ],
 ]
+
+[tool.tox.env.ruff-fix]
+labels = ["fix"]
+description = "Apply the available Ruff fixes"
+change_dir = "{tox_root}"
+skip_install = true
+deps = ["ruff>=0.9"]
+commands = [["ruff", "check", "--fix", "--exit-zero", "."], ["ruff", "format", "."]]
 
 [tool.tox.env.typecheck]
 change_dir = "{tox_root}"
