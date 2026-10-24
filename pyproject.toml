@@ -37,11 +37,16 @@ dev = [
   'speedups[test,lint,typecheck]',
   'questionary>=2.1',
   'rich>=13.0',
-  'tox>=4.0',
-  'tox-uv>=1.28',
-  'tox-gh>=1.7',
+  # tox and matplotlib pull in filelock>=4.2.1 and pillow>=13, which need
+  # Python 3.11. Python 3.10 keeps the test, lint and typecheck extras.
+  "tox>=4.0; python_version >= '3.11'",
+  "tox-uv>=1.28; python_version >= '3.11'",
+  "tox-gh>=1.7; python_version >= '3.11'",
 ]
-benchmark = ['matplotlib>=3.7', 'psycopg[binary]>=3.0.8']
+benchmark = [
+  "matplotlib>=3.7; python_version >= '3.11'",
+  'psycopg[binary]>=3.0.8',
+]
 
 [project.urls]
 Homepage = 'https://github.com/WoLpH/speedups/'
@@ -212,3 +217,6 @@ commands = [
 
 [tool.uv]
 exclude-newer = "14 days"
+# Security fixes released inside the 14 day window (dependabot alerts on
+# uv.lock). Drop an entry once its release is older than the window.
+exclude-newer-package = { pillow = "2026-10-24T00:00:00Z", filelock = "2026-10-24T00:00:00Z", virtualenv = "2026-10-24T00:00:00Z", uv = "2026-10-24T00:00:00Z" }
