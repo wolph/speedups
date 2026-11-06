@@ -51,6 +51,9 @@ benchmark = [
 [project.urls]
 Homepage = 'https://github.com/WoLpH/speedups/'
 Repository = 'https://github.com/WoLpH/speedups/'
+Issues = 'https://github.com/wolph/speedups/issues'
+Changelog = 'https://github.com/wolph/speedups/releases'
+Funding = 'https://github.com/sponsors/wolph'
 
 [build-system]
 requires = ['setuptools>=75', 'cython>=3.0.8', 'numpy>=1.23.5', 'wheel>=0.37.1']
