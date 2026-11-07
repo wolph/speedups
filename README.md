@@ -67,8 +67,8 @@ pip install "speedups[postgres]"
 
 ## Documentation
 
-The README gets you to the first working call. These guides cover the details
-and failure modes:
+The README gets you to the first working call. The full guides are at
+https://speedups.readthedocs.io/ and cover the details and failure modes:
 
 - [PostgreSQL arrays to NumPy](docs/postgresql.md)
 - [ASCII STL I/O](docs/stl.md)

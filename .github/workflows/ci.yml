@@ -29,6 +29,17 @@ jobs:
           RUFF_OUTPUT_FORMAT: >-
             ${{ github.event_name == 'pull_request' && 'github' || 'full' }}
 
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uvx --with tox-uv tox run -e docs
+
   typecheck:
     name: Type check
     runs-on: ubuntu-latest

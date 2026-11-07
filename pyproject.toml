@@ -32,6 +32,7 @@ test = [
   'coverage>=7.0',
 ]
 lint = ['ruff>=0.9', 'codespell>=2.2']
+docs = ['sphinx>=8.0', 'myst-parser>=4.0', 'furo>=2024.8']
 typecheck = ['pyright>=1.1', 'mypy>=1.13']
 dev = [
   'speedups[test,lint,typecheck]',
@@ -50,6 +51,7 @@ benchmark = [
 
 [project.urls]
 Homepage = 'https://github.com/WoLpH/speedups/'
+Documentation = 'https://speedups.readthedocs.io/'
 Repository = 'https://github.com/WoLpH/speedups/'
 Issues = 'https://github.com/wolph/speedups/issues'
 Changelog = 'https://github.com/wolph/speedups/releases'
@@ -122,6 +124,7 @@ skip = '*.c,*.so'
 requires = ["tox-uv>=1.28", "tox-gh>=1.7"]
 env_list = [
   "lint",
+  "docs",
   "typecheck",
   "py310-numpy1",
   "py310-numpy2",
@@ -178,6 +181,12 @@ commands = [
     ".",
   ],
 ]
+
+[tool.tox.env.docs]
+change_dir = "{tox_root}"
+skip_install = true
+deps = ["-r docs/requirements.txt"]
+commands = [["sphinx-build", "-W", "-b", "html", "docs", "{env_tmp_dir}/html"]]
 
 [tool.tox.env.ruff-fix]
 labels = ["fix"]

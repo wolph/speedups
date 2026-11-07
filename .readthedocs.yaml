@@ -1,0 +1,16 @@
+# Markdown guides rendered with Sphinx and MyST. The package itself is not
+# installed, so the Cython extensions never need a compiler on Read the Docs.
+version: 2
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "3.12"
+sphinx:
+  configuration: docs/conf.py
+  fail_on_warning: true
+formats:
+  - pdf
+  - epub
+python:
+  install:
+    - requirements: docs/requirements.txt
