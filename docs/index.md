@@ -11,9 +11,13 @@ contracts, failure modes, and maintainer commands you need after that.
 
 ## Guides
 
-- [PostgreSQL arrays to NumPy](postgresql.md)
-- [ASCII STL I/O](stl.md)
-- [Development](development.md)
+```{toctree}
+:maxdepth: 2
+
+postgresql
+stl
+development
+```
 
 ## Scope
 
